@@ -1,0 +1,15 @@
+html
+  head
+    script(src='http://code.jquery.com/jquery-1.6.4.min.js')
+    script
+       $.getScript('/socket.io/socket.io.js', function(){
+       var socket = new io.Socket(null, {port: 3000, rememberTransport: false});
+         socket.connect();
+         // no need to nest and listen on 'connection' first simply do:
+         console.log('connected');
+         socket.on('message', function(json) {
+            alert('received:' + json.message);
+         });
+       });
+  body
+    p Welcome to #{title}
