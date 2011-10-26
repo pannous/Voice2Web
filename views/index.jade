@@ -1,88 +1,11 @@
 doctype 5
 html
   head
-    link(href='/stylesheets/style.css', rel='stylesheet')
-    script(src='http://code.jquery.com/jquery-1.6.1.min.js')
+    link(href='/css/style.css', rel='stylesheet')
+    script(src='http://code.jquery.com/jquery-1.6.4.min.js')
     script(src='/socket.io/socket.io.js')
-    script
-      // socket.io specific code
-      var socket = io.connect();
-
-      socket.on('connect', function () {
-        $('#chat').addClass('connected');
-      });
-
-      // listener for broadcastinformation like connecting&disconnecting
-      socket.on('announcement', function (msg) {
-        $('#lines').append($('<p>').append($('<em>').text(msg)));
-      });
-
-      // print names of all connected people
-      socket.on('nicknames', function (nicknames) {
-        $('#nicknames').empty().append($('<span>Online: </span>'));
-        for (var i in nicknames) {
-          $('#nicknames').append($('<b>').text(nicknames[i] + ' '));
-        }
-      });
-
-      // listen to messages of every user
-      socket.on('user message', message);
-      socket.on('reconnect', function () {
-        $('#lines').remove();
-        message('System', 'Reconnected to the server');
-      });
-
-      socket.on('reconnecting', function () {
-        message('System', 'Attempting to re-connect to the server');
-      });
-
-      socket.on('error', function (e) {
-        message('System', e ? e : 'A unknown error occurred');
-      });
-
-      function message (from, msg) {
-        $('#lines').append($('<p>').append($('<b>').text(from + ' '), msg));
-        if(msg.indexOf("send mail") !== -1 || msg.indexOf("send email") !== -1) {
-           // TODO include history and replace new line with %0D%0A
-            //between the speech mark goes the receptient. Seperate addresses with a ;
-            var addresses = "root@pannous.info";
-            //write the message text between the speech marks or put a variable in the place of the speech marks
-            var body = msg; 
-            //between the speech marks goes the subject of the message
-            var subject = "Send from my webvoice"; 
-            var href = "mailto:" + addresses + "?" + "subject=" + subject + "&" + "body=" + body;
-            var wndMail;
-            wndMail = window.open(href, "_blank", "scrollbars=yes,resizable=yes,width=10,height=10");
-            if(wndMail)
-                wndMail.close();
-        }
-      }
-
-      // dom manipulation
-      $(function () {
-        $('#set-nickname').submit(function (ev) {
-          socket.emit('nickname', $('#nick').val(), function (set) {
-            if (!set) {
-              clear();
-              return $('#chat').addClass('nickname-set');
-            }
-            $('#nickname-err').css('visibility', 'visible');
-          });
-          return false;
-        });
-
-        $('#send-message').submit(function () {
-          message('me', $('#message').val());
-          socket.emit('user message', $('#message').val());
-          clear();
-          $('#lines').get(0).scrollTop = 10000000;
-          return false;
-        });
-
-        function clear () {
-          $('#message').val('').focus();
-        };
-      });
+    script(src='/js/ui.js')
+      
   body
     #chat
       #nickname
@@ -97,4 +20,10 @@ html
         #lines
       form#send-message
         input#message
-        button Send
+        button Chat
+
+      form#clear-messages
+        button Clear
+
+      form#email-messages
+        button Email
