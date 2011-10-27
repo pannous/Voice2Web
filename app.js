@@ -87,13 +87,14 @@ io.sockets.on('connection' , function (freshClient) {
         // AFTER setting botnames
         var oldClient = botnames[botname];
         if(botname && botname.length >= 20) {                            
-            if(oldClient !== freshClient) {                
+            if(oldClient !== freshClient) {           
+                freshClient.botname = botname;
                 freshClient.on('disconnect', function () {
                     if (!freshClient.botname) return;
 
                     delete botnames[freshClient.botname];               
                     freshClient.broadcast.emit('botnames', getNameCount(botnames));
-                });
+                });                
                 console.log('NEW client connected: ' + freshClient.botname);                
                 if(oldClient) {
                     var om = oldClient.oldmessages;
@@ -107,8 +108,7 @@ io.sockets.on('connection' , function (freshClient) {
                     // so that we get a 'room' feature and do not need to handle clear etc on our own
                     if(oldClient.emit)
                         oldClient.emit('user message', botname, 'WARNING: multiple clients are not supported');                    
-                }
-                freshClient.botname = botname;
+                }               
                 botnames[botname] = freshClient;
             } else
                 console.log('OLD client connected: ' + freshClient.botname);                

@@ -13,12 +13,15 @@
 
 var socket = io.connect('http://localhost:3000/');
 var initialized;
-function initWebSocket(botName) {        
-    $('#botname-err').css('visibility', 'hidden    ');
+$('#botname-expand').hide();
+function initWebSocket(botName) {
+    $('#botname-err').css('visibility', 'hidden');
     if(initialized === botName) {
         //alert('Already initialized with ' + botName)
         return;
     }
+    $('#botname-expand').show();
+    $('#botname').hide();
     
     function reconnect() {        
         socket.emit('botname', botName, function (set) {
@@ -39,7 +42,7 @@ function initWebSocket(botName) {
     
     socket.on('connect', function () {        
         socket.on('botnames', function (botnames) {   
-            $('#botnames').empty().append($('<span>Online: '+botnames+'</span>'));    
+            $('#botnames').empty().append($('<span>People Online: '+botnames+'</span>'));    
         });
 
         socket.on('user message', message);
@@ -62,7 +65,12 @@ var handlers = {};
 
 handlers['default'] = function(msg) {
     // TODO add into last <p>
-    $('#lines').append(' ' + msg);
+    //    $('#lines').append(' ' + msg);
+    var para = $("#lines p:last");
+    if(para && para.length > 0)
+        para.text(para.text() + " " + msg);
+    else
+        $('#lines').append($('<p>').append(msg));
 }
 
 handlers['send email'] = function() {
@@ -71,14 +79,16 @@ handlers['send email'] = function() {
 
 handlers['clear message'] = function() {
     $('#lines').remove();
+    clear();
 }
 
-handlers['new line'] = function(str) {        
-    $('#lines').append($('<p>').append(str));
+handlers['new line'] = function(msg) {
+    $('#lines').append($('<p>').append(msg));
+    clear();
 }
 
 // TODO move to server side
-function getHandler(msg){
+function getHandlerInfo(msg){
     var lowerMsg = msg.toLowerCase();
     var info = {};
     if(lowerMsg.indexOf('clear message') == 0) {
@@ -161,22 +171,33 @@ $(function () {
     });    
     
     $('#email-messages').submit(function () {        
-        message('send email');
+        message('', 'send email');
         return false;
     });
     
     $('#clear-last-message').submit(function () {        
-        message('clear message');
+        message('', 'clear message');
         return false;
     });
     
     $('#del-last-input').submit(function () {        
-        message('delete');
+        message('', 'delete');
         return false;
     });
     
     $('#new-line').submit(function () {        
-        message('new line');
+        message('', 'new line');
+        return false;
+    });
+    
+    $('#botname-expand').submit(function () {        
+        if($('#botname').is(":visible")) {
+            $('#botname-expand-btn').text('Show Login');
+            $('#botname').hide();
+        } else {
+            $('#botname-expand-btn').text('Hide Login');
+            $('#botname').show();
+        }
         return false;
     });
 });
@@ -187,7 +208,7 @@ function clear () {
 
 function getAllText () {  
     var optionTexts = [];
-    $("#lines").each(function() {        
+    $("#lines p").each(function() {        
         optionTexts.push($(this).text());
     });
     return optionTexts.join(" BR ");
