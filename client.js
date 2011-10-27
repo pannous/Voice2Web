@@ -1,7 +1,7 @@
 var http = require('http');
 
 var data = JSON.stringify({
-    'user': 'aaaaaBBBBBcccccDDDDD', 
+    'user': 'Jeannie ifc tdd dyxhxyxy', 
     'message':'hello world'
 });
 

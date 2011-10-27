@@ -11,6 +11,9 @@ body {
     float: right;
 }
 
+#botnames {
+    float: right;
+}
 #nickname-err {
     visibility: hidden;
 }
