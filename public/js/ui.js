@@ -14,19 +14,31 @@
 var socket = io.connect('http://localhost:3000/');
 var initialized;
 function initWebSocket(botName) {        
+    $('#botname-err').css('visibility', 'hidden    ');
     if(initialized === botName) {
-        alert('Already initialized with ' + botName)
+        //alert('Already initialized with ' + botName)
         return;
     }
+    
+    socket.emit('botname', botName, function (set) {
+        console.log("emit botname " + set);        
+        if (set) {            
+            $('#info').empty();
+            $('#info').append($('<p>connected</p>'));
+            initialized = botName;
+            clear();
+            return $('#chat').addClass('botname-set');
+        }
+        $('#botname-err').css('visibility', 'visible');
+    });
      
-    socket.of('/private').on('error', function (reason) {        
-        $('#chat').append($('<p>connection failed</p>'));
-    }).on('connect', function () {        
-        initialized = botName;        
-        $('#chat').append($('<p>connected</p>'));                
-   
-        socket.on('nicknames', function (nicknames) {   
-            $('#nicknames').empty().append($('<span>Online: '+nicknames+'</span>'));    
+    socket.on('error', function (err) {
+        $('#chat').append($('<p>connection failed '+err+'</p>'));                
+    });
+    
+    socket.on('connect', function () {        
+        socket.on('botnames', function (botnames) {   
+            $('#botnames').empty().append($('<span>Online: '+botnames+'</span>'));    
         });
 
         socket.on('user message', message);
@@ -67,25 +79,24 @@ function sendEmail() {
 
 // DOM manipulation
 $(function () {    
-    var user = $.cookie("USER");
-    if(user) {
-        initWebSocket(user);
-        // TODO fill textfield
+    var botName = $.cookie("USER");
+    if(botName) {
+        $('#nick').val(botName);
+        initWebSocket(botName);
     }
         
-    $('#set-nickname').submit(function (ev) {
-        // change cookie value to submitted user
-        var user = $('#nick').val();        
-        $.cookie("USER", user, {
+    $('#set-botname').submit(function (ev) {        
+        var botName = $('#nick').val();        
+        $.cookie("USER", botName, {
             expires : 10
         });        
-        initWebSocket(user);
+        initWebSocket(botName);        
         return false;
     });
 
     $('#send-message').submit(function () {
         message($('#nick').val(), $('#message').val());
-        socket.emit('user message', $('#message').val());
+        socket.emit('user message', $('#nick').val(), $('#message').val());
         clear();
         $('#lines').get(0).scrollTop = 10000000;
         return false;
@@ -100,16 +111,16 @@ $(function () {
         sendEmail();
         return false;
     });
-
-    function clear () {        
-        $('#message').val('').focus();
-    }
-
-    function getAllText () {  
-        var optionTexts = [];
-        $("#lines p").each(function() {
-            optionTexts.push($(this).text());
-        });
-        return optionTexts.join(" BR ");
-    }
 });
+
+function clear () {        
+    $('#message').val('').focus();
+}
+
+function getAllText () {  
+    var optionTexts = [];
+    $("#lines p").each(function() {
+        optionTexts.push($(this).text());
+    });
+    return optionTexts.join(" BR ");
+}

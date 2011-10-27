@@ -10,13 +10,13 @@ html
       
   body
     #chat
-      #nickname
-        form.wrap#set-nickname
-          p Please type in your longish botname and press enter.
+      #botname
+        form.wrap#set-botname
+          p Please type in your longish bot name and press enter.
           input#nick
-          p#nickname-err Network Error      
-      #messages
-        #nicknames
+          #botnames
+          p#botname-err Network Error or bot name too short (20 characters or more)          
+      #messages        
         #lines
       form#send-message
         input#message
@@ -24,6 +24,8 @@ html
 
       form#clear-messages
         button Clear
+
+      #info
 
     #buttons
       form#email-messages

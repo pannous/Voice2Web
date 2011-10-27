@@ -33,18 +33,21 @@ app.get('/', function (req, res) {
     });
 });
 
-var nicknames = {};
-app.post('/data', function(req, res){
-    var tmpUser= req.body.user;
-    console.log('[FROM APP] post:' + tmpUser + ", msg:" + req.body.message);
-    var communication = nicknames[tmpUser];     
-    if(!communication)
-        communication = addCommunication(tmpUser);
-        
-    communication.appAvailable = true;
-    if(communication.client)
-        communication.client.emit('user message', tmpUser, req.body.message);        
-    // else TODO store message to be emited at a later time
+var botnames = {};
+app.post('/data', function(req, res){    
+    var botname = req.body.user;
+    var msg = req.body.message;
+    var client = botnames[botname];
+    if(client)        
+        client.emit('user message', botname, msg);
+    else {
+        client = {};
+        if(!client.oldmessages)
+            client.oldmessages = msg;
+        else
+            client.oldmessages += ' ' + msg;
+         botnames[botname] = client;
+    }
     
     res.writeHead(200, {
         'Content-Type': 'text/plain'
@@ -62,13 +65,6 @@ function parseCookies(_cookies) {
     return cookies;
 }
 
-function addCommunication(tmpUser) {    
-    var communication = {};    
-    communication.user = tmpUser;
-    nicknames[tmpUser] = communication;
-    return communication;
-}
-
 function getNameCount(list) {
     var count = 0;
     for(var nick in list) {            
@@ -83,52 +79,36 @@ app.listen(3000, function () {
 });
 
 var io = sio.listen(app);
-io.of('/private').authorization(function (handshakeData, callback) {
-    var cookies = parseCookies(handshakeData.headers.cookie);    
-    console.log('cookie<' + cookies.USER + ">");
-    if(!cookies.USER || cookies.USER.length < 20) {
-        console.log('bot name too short');
-        callback("Bot name too short", false);
-        return;
-    }
-    
-    var communication = nicknames[cookies.USER];
-    if(!communication)
-        communication = addCommunication(cookies.USER);    
-        
-    console.log('called sendToClient:' + cookies.USER); 
-    handshakeData.identity = cookies.USER;
-    callback("app available:" + communication.appAvailable == true, true);
-}).on('connection' , function (client) {
-    var communication = nicknames[client.handshake.identity]
-    console.log('authorized communication:' + communication); 
-    if(!communication)
-        return;
-    
-    communication.client = client;
-    client.emit('identity', client.handshake.identity);
+io.sockets.on('connection' , function (freshClient) {
+    // TODO new connection after browser REFRESH requires submitting bot name
+    console.log('[BROWSER] client connected without nick');
+    freshClient.on('botname', function (botname, callback) {
+        // AFTER setting botnames
+        var oldClient = botnames[botname];
+        if(botname.length >= 20) {                            
+            if(oldClient !== freshClient) {                
+                freshClient.on('disconnect', function () {
+                    if (!freshClient.botname) return;
 
-    console.log('now browser client connected ' + communication.user);
-    client.on('user message', function (msg) {
-        console.log('on user message! user:' + communication.user +" msg:" + msg);
-        client.broadcast.emit('user message', communication.user, msg);
-    });
-
-    client.on('nickname', function (nick, callback) {
-        if (nicknames[nick]) {
+                    delete botnames[freshClient.botname];               
+                    freshClient.broadcast.emit('botnames', getNameCount(botnames));
+                });
+                console.log('[BROWSER] NEW client connected: ' + freshClient.botname);
+                if(oldClient && oldClient.oldmessages) {
+                    console.log('Send old messages: ' + oldClient.oldmessages);
+                    freshClient.emit('user message', botname, oldClient.oldmessages);
+                }
+                freshClient.botname = botname;
+                botnames[botname] = freshClient;
+            } else
+                console.log('[BROWSER] OLD client connected: ' + freshClient.botname);                
+                       
+            //client.broadcast.emit('announcement', nick + ' connected');                
+            io.sockets.emit('botnames', getNameCount(botnames));
             callback(true);
         } else {
-            callback(false);
-            //client.broadcast.emit('announcement', nick + ' connected');
-            io.sockets.emit('nicknames', getNameCount(nicknames));
+            console.log("FALSE on botname:" + botname);
+            callback(false);            
         }
     });
-
-    client.on('disconnect', function () {
-        if (!communication.user) return;
-
-        delete nicknames[communication.user];
-        //client.broadcast.emit('announcement', client.nickname + ' disconnected');
-        client.broadcast.emit('nicknames', getNameCount(nicknames));
-    });    
 });
