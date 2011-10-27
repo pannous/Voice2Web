@@ -11,34 +11,36 @@
 //        , 'jsonp-polling'
 //        ]);
 
-var socket = io.connect('http://localhost:3000/').socket;
-var initialized = false;
+var socket = io.connect('http://localhost:3000/');
+var initialized;
 function initWebSocket(botName) {        
-    if(initialized)
+    if(initialized === botName) {
+        alert('Already initialized with ' + botName)
         return;
+    }
      
-    socket.of('/private').on('connect_failed', function (reason) {
-        console.log('unable to connect to namespace', reason);
+    socket.of('/private').on('error', function (reason) {        
+        $('#chat').append($('<p>connection failed</p>'));
     }).on('connect', function () {        
-        initialized = true;
-        $('#chat').addClass('connected');        
-    });
-        
-    socket.on('nicknames', function (nicknames) {   
-        $('#nicknames').empty().append($('<span>Online: '+nicknames+'</span>'));    
-    });
+        initialized = botName;        
+        $('#chat').append($('<p>connected</p>'));                
+   
+        socket.on('nicknames', function (nicknames) {   
+            $('#nicknames').empty().append($('<span>Online: '+nicknames+'</span>'));    
+        });
 
-    socket.on('user message', message);
-    socket.on('reconnect', function () {
-        message('System', 'Reconnected to the server');
-    });
+        socket.on('user message', message);
+        socket.on('reconnect', function () {
+            message('System', 'Reconnected to the server');
+        });
 
-    socket.on('reconnecting', function () {
-        message('System', 'Attempting to re-connect to the server');
-    });
+        socket.on('reconnecting', function () {
+            message('System', 'Attempting to re-connect to the server');
+        });
 
-    socket.on('error', function (e) {
-        message('System', e ? e.toString() : 'A unknown error occurred');
+        socket.on('error', function (e) {
+            message('System', e ? e.toString() : 'A unknown error occurred');
+        });
     });
 }
 
@@ -68,7 +70,7 @@ $(function () {
     var user = $.cookie("USER");
     if(user) {
         initWebSocket(user);
-    // TODO fill textfield
+        // TODO fill textfield
     }
         
     $('#set-nickname').submit(function (ev) {

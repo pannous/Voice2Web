@@ -42,10 +42,8 @@ app.post('/data', function(req, res){
         communication = addCommunication(tmpUser);
         
     communication.appAvailable = true;
-    if(communication.client) {
-        console.log('[FROM APP] emit:' + req.body.message);
+    if(communication.client)
         communication.client.emit('user message', tmpUser, req.body.message);        
-    }
     // else TODO store message to be emited at a later time
     
     res.writeHead(200, {
@@ -88,7 +86,7 @@ var io = sio.listen(app);
 io.of('/private').authorization(function (handshakeData, callback) {
     var cookies = parseCookies(handshakeData.headers.cookie);    
     console.log('cookie<' + cookies.USER + ">");
-    if(cookies.USER.length < 20) {
+    if(!cookies.USER || cookies.USER.length < 20) {
         console.log('bot name too short');
         callback("Bot name too short", false);
         return;
@@ -112,14 +110,15 @@ io.of('/private').authorization(function (handshakeData, callback) {
 
     console.log('now browser client connected ' + communication.user);
     client.on('user message', function (msg) {
+        console.log('on user message! user:' + communication.user +" msg:" + msg);
         client.broadcast.emit('user message', communication.user, msg);
     });
 
-    client.on('nickname', function (nick, fn) {
+    client.on('nickname', function (nick, callback) {
         if (nicknames[nick]) {
-            fn(true);
+            callback(true);
         } else {
-            fn(false);
+            callback(false);
             //client.broadcast.emit('announcement', nick + ' connected');
             io.sockets.emit('nicknames', getNameCount(nicknames));
         }
