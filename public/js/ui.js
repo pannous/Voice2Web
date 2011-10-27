@@ -13,7 +13,7 @@
 
 var socket = io.connect('http://localhost:3000/');
 var initialized;
-$('#botname-expand').hide();
+
 function initWebSocket(botName) {
     $('#botname-err').css('visibility', 'hidden');
     if(initialized === botName) {
@@ -64,38 +64,50 @@ function initWebSocket(botName) {
 var handlers = {};
 
 handlers['default'] = function(msg) {
-    // TODO add into last <p>
-    //    $('#lines').append(' ' + msg);
-    var para = $("#lines p:last");
-    if(para && para.length > 0)
-        para.text(para.text() + " " + msg);
+    var txt = $("#lines").val();
+    if(txt && txt.length > 0)
+        $("#lines").val(txt + " " + msg);
     else
-        $('#lines').append($('<p>').append(msg));
+        $('#lines').val(msg);
 }
 
 handlers['send email'] = function() {
     sendEmail();
 }
 
-handlers['clear message'] = function() {
-    $('#lines').remove();
+handlers['clear messages'] = function() {
+    $('#lines').val('');
     clear();
 }
 
 handlers['new line'] = function(msg) {
-    $('#lines').append($('<p>').append(msg));
+    $('#lines').val($('#lines').val() + "\n" + msg);
     clear();
+}
+
+handlers['goto beginning'] = function() {
+    setCaretToPos(document.getElementById("lines"), 0);
+}
+
+handlers['delete last'] = function() {
+    alert('not yet implemented');
 }
 
 // TODO move to server side
 function getHandlerInfo(msg){
     var lowerMsg = msg.toLowerCase();
     var info = {};
-    if(lowerMsg.indexOf('clear message') == 0) {
-        info.handler = 'clear message';
+    if(lowerMsg.indexOf('clear messages') == 0) {
+        info.handler = 'clear messages';
+    } else if(lowerMsg.indexOf('clear last') == 0) {
+        info.handler = 'clear last';
+    } else if(lowerMsg.indexOf('goto beginning') == 0 || lowerMsg.indexOf('go to beginning') == 0) {
+        info.handler = 'goto beginning';
+    // sende email    
     } else if(lowerMsg.indexOf("send mail") == 0 || lowerMsg.indexOf("send email") == 0) {
         info.handler = 'send email';
-    } else if(lowerMsg.indexOf("new line") == 0 || lowerMsg.indexOf("new paragraph") == 0) {               
+    // TODO accept new line at msg end too + accept next line
+    } else if(lowerMsg.indexOf("new line") == 0 || lowerMsg.indexOf("new paragraph") == 0) {
         var index1 = lowerMsg.indexOf("new line");
         var index2 = lowerMsg.indexOf("new paragraph");
         if(index1 < 0 || index2 >= 0 && index1 < index2)
@@ -136,7 +148,7 @@ function sendEmail() {
     // seperate addresses with a ;
     var addresses = "";
     var body = getAllText();
-    body = body.replace(/BR/g, "%0D%0A");    
+    body = body.replace(/\n/g, "%0D%0A");    
     var subject = "Send from my webvoice"; 
     var href = "mailto:" + addresses + "?" + "subject=" + subject + "&" + "body=" + body;
     var wndMail;
@@ -147,13 +159,15 @@ function sendEmail() {
 
 // DOM manipulation
 $(function () {    
+    $('#botname-expand').hide();
+    $('#lines').css("width", "500").css("height", "250");
     var botName = $.cookie("USER");
     if(botName) {
         $('#nick').val(botName);
         initWebSocket(botName);
     }
         
-    $('#set-botname').submit(function (ev) {        
+    $('#set-botname').click(function (ev) {        
         var botName = $('#nick').val();        
         $.cookie("USER", botName, {
             expires : 10
@@ -162,7 +176,7 @@ $(function () {
         return false;
     });
 
-    $('#send-message').submit(function () {
+    $('#send-message').click(function () {
         message($('#nick').val(), $('#message').val());
         socket.emit('user message', $('#nick').val(), $('#message').val());
         clear();
@@ -170,27 +184,31 @@ $(function () {
         return false;
     });    
     
-    $('#email-messages').submit(function () {        
+    $('#email-messages').click(function () {        
         message('', 'send email');
         return false;
     });
     
-    $('#clear-last-message').submit(function () {        
-        message('', 'clear message');
+    $('#clear-messages').click(function () {        
+        message('', 'clear messages');
         return false;
     });
     
-    $('#del-last-input').submit(function () {        
-        message('', 'delete');
+    $('#del-last-input').click(function () {        
+        message('', 'delete last');
         return false;
     });
     
-    $('#new-line').submit(function () {        
+    $('#new-line').click(function () {        
         message('', 'new line');
         return false;
     });
     
-    $('#botname-expand').submit(function () {        
+    $('#goto-start').click(function () {        
+        message('', "goto beginning");
+    });
+    
+    $('#botname-expand').click(function () {        
         if($('#botname').is(":visible")) {
             $('#botname-expand-btn').text('Show Login');
             $('#botname').hide();
@@ -206,10 +224,24 @@ function clear () {
     $('#message').val('').focus();
 }
 
-function getAllText () {  
-    var optionTexts = [];
-    $("#lines p").each(function() {        
-        optionTexts.push($(this).text());
-    });
-    return optionTexts.join(" BR ");
+function getAllText () {    
+    return $("#lines").val();
+}
+
+function setSelectionRange(input, selectionStart, selectionEnd) {
+    if (input.setSelectionRange) {
+        input.focus();
+        input.setSelectionRange(selectionStart, selectionEnd);
+    }
+    else if (input.createTextRange) {
+        var range = input.createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', selectionEnd);
+        range.moveStart('character', selectionStart);
+        range.select();
+    }
+}
+
+function setCaretToPos (input, pos) {
+    setSelectionRange(input, pos, pos);
 }

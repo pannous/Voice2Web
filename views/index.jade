@@ -19,7 +19,7 @@ html
           #botnames
           p#botname-err Network Error or bot name too short (20 characters or more)          
       #messages        
-        #lines
+        textarea#lines
       form#send-message
         input#message
         button Chat      
@@ -27,11 +27,13 @@ html
       #network
 
     #buttons
-      form#email-messages
+      #email-messages
         button Send Email
-      form#new-line
+      #new-line
         button New Line
-      form#del-last-input
+      #del-last-input
         button Remove Last Input
-      form#clear-messages
+      #clear-messages
         button Clear Messages
+      #goto-start
+        button Go to Beginning
