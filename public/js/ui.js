@@ -1,68 +1,59 @@
-// socket.io specific code
-var socket = io.connect();
+// TODO settings for production:
+//    io.enable('browser client minification');
+//    io.enable('browser client etag');
+//    io.enable('browser client gzip');
+//    io.set('log level', 1);
+//    io.set('transports', [
+//        'websocket'
+//        , 'flashsocket'
+//        , 'htmlfile'
+//        , 'xhr-polling'
+//        , 'jsonp-polling'
+//        ]);
 
-var colors = [        
-"orange", "red", "white", "blue", "brown"    
-];
+var socket = io.connect('http://localhost:3000/').socket;
+var initialized = false;
+function initWebSocket(botName) {        
+    if(initialized)
+        return;
+     
+    socket.of('/private').on('connect_failed', function (reason) {
+        console.log('unable to connect to namespace', reason);
+    }).on('connect', function () {        
+        initialized = true;
+        $('#chat').addClass('connected');        
+    });
+        
+    socket.on('nicknames', function (nicknames) {   
+        $('#nicknames').empty().append($('<span>Online: '+nicknames+'</span>'));    
+    });
 
-var nickToColor = {};
+    socket.on('user message', message);
+    socket.on('reconnect', function () {
+        message('System', 'Reconnected to the server');
+    });
 
-socket.on('connect', function () {
-    $('#chat').addClass('connected');
-});
+    socket.on('reconnecting', function () {
+        message('System', 'Attempting to re-connect to the server');
+    });
 
-// listener for broadcastinformation like connecting&disconnecting
-socket.on('announcement', function (msg) {
-    $('#lines').append($('<p>').append($('<em>').text(msg)));
-});
+    socket.on('error', function (e) {
+        message('System', e ? e.toString() : 'A unknown error occurred');
+    });
+}
 
-// print names of all connected people
-socket.on('nicknames', function (nicknames) {
-    $('#nicknames').empty().append($('<span>Online: </span>'));
-    // TODO nicknames should be an array so that we can get the length easily
-    var noOfNicks = 0;
-    for (var key in nicknames) {
-        noOfNicks ++;
-    }
-    
-    var counter = 0;    
-    for (var key in nicknames) {        
-        var colr = colors[counter++ % noOfNicks];        
-        nickToColor[nicknames[key]] = colr;
-        $('#nicknames').append($('<b>').css('backgroundColor', colr.toString()).text(nicknames[key] + ' '));
-    }
-});
-
-// listen to messages of every user
-socket.on('user message', message);
-socket.on('reconnect', function () {
-    //$('#lines').remove();
-    message('System', 'Reconnected to the server');
-});
-
-socket.on('reconnecting', function () {
-    message('System', 'Attempting to re-connect to the server');
-});
-
-socket.on('error', function (e) {
-    message('System', e ? e : 'A unknown error occurred');
-});
-
-function message (from, msg) {
-    var colr = nickToColor[from];
-    if(colr === undefined)
-        colr = 'gray';
-    
-    $('#lines').append($('<p>').css('backgroundColor', colr).append(msg));
+function message (from, msg) {  
+    console.log(from +", msg:" + msg);
+    $('#lines').append($('<p>').append(msg));
     if(msg.indexOf("send mail") !== -1 || msg.indexOf("send email") !== -1) {
-        sendEmail("root@pannous.info", getAllText());
+        sendEmail();
     }
 }
 
-//*
-//* seperate addresses with a ;
-//*
-function sendEmail(addresses, body) {        
+function sendEmail() { 
+    // seperate addresses with a ;
+    var addresses = "";
+    var body = getAllText();
     body = body.replace(/BR/g, "%0D%0A");    
     var subject = "Send from my webvoice"; 
     var href = "mailto:" + addresses + "?" + "subject=" + subject + "&" + "body=" + body;
@@ -72,16 +63,21 @@ function sendEmail(addresses, body) {
         wndMail.close();
 }
 
-// dom manipulation
-$(function () {
+// DOM manipulation
+$(function () {    
+    var user = $.cookie("USER");
+    if(user) {
+        initWebSocket(user);
+    // TODO fill textfield
+    }
+        
     $('#set-nickname').submit(function (ev) {
-        socket.emit('nickname', $('#nick').val(), function (set) {
-            if (!set) {
-                clear();
-                return $('#chat').addClass('nickname-set');
-            }
-            $('#nickname-err').css('visibility', 'visible');
-        });
+        // change cookie value to submitted user
+        var user = $('#nick').val();        
+        $.cookie("USER", user, {
+            expires : 10
+        });        
+        initWebSocket(user);
         return false;
     });
 
@@ -99,7 +95,7 @@ $(function () {
     });
     
     $('#email-messages').submit(function () {        
-        sendEmail("root@pannous.info", getAllText());
+        sendEmail();
         return false;
     });
 

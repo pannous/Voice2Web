@@ -33,20 +33,51 @@ app.get('/', function (req, res) {
     });
 });
 
-
 var nicknames = {};
-
 app.post('/data', function(req, res){
-    var client = nicknames[req.body.user];
-    if(client) {
-        client.emit('user message', req.body.user + ' phone', req.body.message);
-        res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.end('accepted\n');
-    } else {
-        res.writeHead(404, {'Content-Type': 'text/plain'});
-        res.end('not found\n');
+    var tmpUser= req.body.user;
+    console.log('[FROM APP] post:' + tmpUser + ", msg:" + req.body.message);
+    var communication = nicknames[tmpUser];     
+    if(!communication)
+        communication = addCommunication(tmpUser);
+        
+    communication.appAvailable = true;
+    if(communication.client) {
+        console.log('[FROM APP] emit:' + req.body.message);
+        communication.client.emit('user message', tmpUser, req.body.message);        
     }
+    // else TODO store message to be emited at a later time
+    
+    res.writeHead(200, {
+        'Content-Type': 'text/plain'
+    });
+    res.end('accepted\n');  
 });
+
+function parseCookies(_cookies) {
+    var cookies = {};
+    _cookies && _cookies.split(';').forEach(function( cookie ) {
+        cookie = cookie.replace(/\%20/g, " ");
+        var parts = cookie.split('=');
+        cookies[ parts[ 0 ].trim() ] = ( parts[ 1 ] || '' ).trim();
+    });
+    return cookies;
+}
+
+function addCommunication(tmpUser) {    
+    var communication = {};    
+    communication.user = tmpUser;
+    nicknames[tmpUser] = communication;
+    return communication;
+}
+
+function getNameCount(list) {
+    var count = 0;
+    for(var nick in list) {            
+        count++;
+    }
+    return count;
+}
 
 app.listen(3000, function () {
     var addr = app.address();
@@ -54,10 +85,34 @@ app.listen(3000, function () {
 });
 
 var io = sio.listen(app);
-io.sockets.on('connection', function (client) {
-    console.log('now browser client connected ' + client.nickname);
+io.of('/private').authorization(function (handshakeData, callback) {
+    var cookies = parseCookies(handshakeData.headers.cookie);    
+    console.log('cookie<' + cookies.USER + ">");
+    if(cookies.USER.length < 20) {
+        console.log('bot name too short');
+        callback("Bot name too short", false);
+        return;
+    }
+    
+    var communication = nicknames[cookies.USER];
+    if(!communication)
+        communication = addCommunication(cookies.USER);    
+        
+    console.log('called sendToClient:' + cookies.USER); 
+    handshakeData.identity = cookies.USER;
+    callback("app available:" + communication.appAvailable == true, true);
+}).on('connection' , function (client) {
+    var communication = nicknames[client.handshake.identity]
+    console.log('authorized communication:' + communication); 
+    if(!communication)
+        return;
+    
+    communication.client = client;
+    client.emit('identity', client.handshake.identity);
+
+    console.log('now browser client connected ' + communication.user);
     client.on('user message', function (msg) {
-        client.broadcast.emit('user message', client.nickname, msg);
+        client.broadcast.emit('user message', communication.user, msg);
     });
 
     client.on('nickname', function (nick, fn) {
@@ -65,26 +120,16 @@ io.sockets.on('connection', function (client) {
             fn(true);
         } else {
             fn(false);
-            client.nickname = nick;
-            nicknames[nick] = client;
-            client.broadcast.emit('announcement', nick + ' connected');
-            io.sockets.emit('nicknames', getNames(nicknames));
+            //client.broadcast.emit('announcement', nick + ' connected');
+            io.sockets.emit('nicknames', getNameCount(nicknames));
         }
     });
 
     client.on('disconnect', function () {
-        if (!client.nickname) return;
+        if (!communication.user) return;
 
-        delete nicknames[client.nickname];
-        client.broadcast.emit('announcement', client.nickname + ' disconnected');
-        client.broadcast.emit('nicknames', getNames(nicknames));
-    });
-    
-    function getNames(list) {
-        var names = {};
-        for(var nick in list) {            
-            names[nick] = nick;
-        }
-        return names;
-    }
+        delete nicknames[communication.user];
+        //client.broadcast.emit('announcement', client.nickname + ' disconnected');
+        client.broadcast.emit('nicknames', getNameCount(nicknames));
+    });    
 });
