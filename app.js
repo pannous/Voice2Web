@@ -38,15 +38,17 @@ app.post('/data', function(req, res){
     var botname = req.body.user;
     var msg = req.body.message;
     var client = botnames[botname];
-    if(client)        
+    if(client && client.emit)        
         client.emit('user message', botname, msg);
     else {
-        client = {};
+        // save message for later displaying
+        if(!client)
+            client = {};        
         if(!client.oldmessages)
-            client.oldmessages = msg;
+            client.oldmessages = [msg];
         else
-            client.oldmessages += ' ' + msg;
-         botnames[botname] = client;
+            client.oldmessages.push(msg);
+        botnames[botname] = client;
     }
     
     res.writeHead(200, {
@@ -79,8 +81,7 @@ app.listen(3000, function () {
 });
 
 var io = sio.listen(app);
-io.sockets.on('connection' , function (freshClient) {
-    // TODO new connection after browser REFRESH requires submitting bot name
+io.sockets.on('connection' , function (freshClient) {    
     console.log('[BROWSER] client connected without nick');
     freshClient.on('botname', function (botname, callback) {
         // AFTER setting botnames
@@ -93,15 +94,17 @@ io.sockets.on('connection' , function (freshClient) {
                     delete botnames[freshClient.botname];               
                     freshClient.broadcast.emit('botnames', getNameCount(botnames));
                 });
-                console.log('[BROWSER] NEW client connected: ' + freshClient.botname);
-                if(oldClient && oldClient.oldmessages) {
-                    console.log('Send old messages: ' + oldClient.oldmessages);
-                    freshClient.emit('user message', botname, oldClient.oldmessages);
+                console.log('NEW client connected: ' + freshClient.botname);
+                var om = oldClient.oldmessages;
+                if(oldClient && om) {
+                    for(var key in om) {
+                        freshClient.emit('user message', botname, om[key]);
+                    }
                 }
                 freshClient.botname = botname;
                 botnames[botname] = freshClient;
             } else
-                console.log('[BROWSER] OLD client connected: ' + freshClient.botname);                
+                console.log('OLD client connected: ' + freshClient.botname);                
                        
             //client.broadcast.emit('announcement', nick + ' connected');                
             io.sockets.emit('botnames', getNameCount(botnames));
