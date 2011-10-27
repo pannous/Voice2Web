@@ -82,11 +82,11 @@ app.listen(3000, function () {
 
 var io = sio.listen(app);
 io.sockets.on('connection' , function (freshClient) {    
-    console.log('[BROWSER] client connected without nick');
+    console.log('[BROWSER] client connected without nick: ' + freshClient.header);
     freshClient.on('botname', function (botname, callback) {
         // AFTER setting botnames
         var oldClient = botnames[botname];
-        if(botname.length >= 20) {                            
+        if(botname && botname.length >= 20) {                            
             if(oldClient !== freshClient) {                
                 freshClient.on('disconnect', function () {
                     if (!freshClient.botname) return;
@@ -94,9 +94,9 @@ io.sockets.on('connection' , function (freshClient) {
                     delete botnames[freshClient.botname];               
                     freshClient.broadcast.emit('botnames', getNameCount(botnames));
                 });
-                console.log('NEW client connected: ' + freshClient.botname);
-                var om = oldClient.oldmessages;
-                if(oldClient && om) {
+                console.log('NEW client connected: ' + freshClient.botname);                
+                if(oldClient && oldClient.oldmessages) {
+                    var om = oldClient.oldmessages;
                     for(var key in om) {
                         freshClient.emit('user message', botname, om[key]);
                     }

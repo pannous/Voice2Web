@@ -20,20 +20,21 @@ function initWebSocket(botName) {
         return;
     }
     
-    socket.emit('botname', botName, function (set) {
-        console.log("emit botname " + set);        
-        if (set) {            
-            $('#info').empty();
-            $('#info').append($('<p>connected</p>'));
-            initialized = botName;
-            clear();
-            return $('#chat').addClass('botname-set');
-        }
-        $('#botname-err').css('visibility', 'visible');
-    });
-     
+    function reconnect() {        
+        socket.emit('botname', botName, function (set) {
+            console.log("emit botname " + set);        
+            if (set) {            
+                networkMsg(set, 'Connected');
+                initialized = botName;
+                clear();
+                return $('#chat').addClass('botname-set');
+            }
+            $('#botname-err').css('visibility', 'visible');
+        });
+    }
+    reconnect();     
     socket.on('error', function (err) {
-        $('#chat').append($('<p>connection failed '+err+'</p>'));                
+        networkMsg(err, 'Connection failed');
     });
     
     socket.on('connect', function () {        
@@ -43,17 +44,18 @@ function initWebSocket(botName) {
 
         socket.on('user message', message);
         socket.on('reconnect', function () {
-            message('System', 'Reconnected to the server');
+            networkMsg(null, 'Reconnected to the server');
+            reconnect();
         });
 
         socket.on('reconnecting', function () {
-            message('System', 'Attempting to re-connect to the server');
+            networkMsg(null, 'Attempting to re-connect to the server');
         });
 
         socket.on('error', function (e) {
-            message('System', e ? e.toString() : 'A unknown error occurred');
+            networkMsg(e, 'A unknown network error occurred');
         });
-    });
+    });        
 }
 
 function message (from, msg) {  
@@ -62,6 +64,12 @@ function message (from, msg) {
     if(msg.indexOf("send mail") !== -1 || msg.indexOf("send email") !== -1) {
         sendEmail();
     }
+}
+
+function networkMsg (error, msg) {   
+    console.log(error);
+    $('#network').empty();
+    $('#network').append($('<p>').append(msg));    
 }
 
 function sendEmail() { 
