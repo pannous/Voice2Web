@@ -1,8 +1,19 @@
 var http = require('http');
 
+var user = 'Jeannie ifc tdd dyxhxyxy';
+var msg = 'hello world';
+
+process.argv.forEach(function (val, index, array) {
+    var sp = val.split('=');
+    if(sp[0] == 'msg')
+        msg = sp[1];
+    if(sp[0] == 'user')
+        user = sp[1];
+});
+
 var data = JSON.stringify({
-    'user': 'Jeannie ifc tdd dyxhxyxy', 
-    'message':'hello world'
+    'user': user, 
+    'message': msg
 });
 
 var host = '0.0.0.0';

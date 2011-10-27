@@ -58,12 +58,62 @@ function initWebSocket(botName) {
     });        
 }
 
-function message (from, msg) {  
-    console.log(from +", msg:" + msg);
-    $('#lines').append($('<p>').append(msg));
-    if(msg.indexOf("send mail") !== -1 || msg.indexOf("send email") !== -1) {
-        sendEmail();
+var handlers = {};
+
+handlers['default'] = function(msg) {
+    // TODO add into last <p>
+    $('#lines').append(' ' + msg);
+}
+
+handlers['send email'] = function() {
+    sendEmail();
+}
+
+handlers['clear message'] = function() {
+    $('#lines').remove();
+}
+
+handlers['new line'] = function(str) {        
+    $('#lines').append($('<p>').append(str));
+}
+
+// TODO move to server side
+function getHandler(msg){
+    var lowerMsg = msg.toLowerCase();
+    var info = {};
+    if(lowerMsg.indexOf('clear message') == 0) {
+        info.handler = 'clear message';
+    } else if(lowerMsg.indexOf("send mail") == 0 || lowerMsg.indexOf("send email") == 0) {
+        info.handler = 'send email';
+    } else if(lowerMsg.indexOf("new line") == 0 || lowerMsg.indexOf("new paragraph") == 0) {               
+        var index1 = lowerMsg.indexOf("new line");
+        var index2 = lowerMsg.indexOf("new paragraph");
+        if(index1 < 0 || index2 >= 0 && index1 < index2)
+            index1 = index2 + "new paragraph".length;
+        else
+            index1 = index1 + "new line".length;
+        var str = msg.substring(index1);
+        index1 = str.indexOf(' ')
+        if(index1 >= 0)
+            str = str.substring(index1+1);
+    
+        info.handler = 'new line';
+        info.parameters = str;        
+    } else {
+        info.handler = 'default';
+        info.parameters = lowerMsg;
     }
+    return info;
+}
+
+function message (from, msg) {
+    console.log(from +", msg:" + msg);
+    
+    var info = getHandlerInfo(msg);    
+    if(info.handler)
+        handlers[info.handler](info.parameters);
+    else
+        handlers['default'](msg);
 }
 
 function networkMsg (error, msg) {   
@@ -108,15 +158,25 @@ $(function () {
         clear();
         $('#lines').get(0).scrollTop = 10000000;
         return false;
-    });
+    });    
     
-    $('#clear-messages').submit(function () {
-        $('#lines').remove();        
+    $('#email-messages').submit(function () {        
+        message('send email');
         return false;
     });
     
-    $('#email-messages').submit(function () {        
-        sendEmail();
+    $('#clear-last-message').submit(function () {        
+        message('clear message');
+        return false;
+    });
+    
+    $('#del-last-input').submit(function () {        
+        message('delete');
+        return false;
+    });
+    
+    $('#new-line').submit(function () {        
+        message('new line');
         return false;
     });
 });
@@ -127,7 +187,7 @@ function clear () {
 
 function getAllText () {  
     var optionTexts = [];
-    $("#lines p").each(function() {
+    $("#lines").each(function() {        
         optionTexts.push($(this).text());
     });
     return optionTexts.join(" BR ");
