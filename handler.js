@@ -1,30 +1,126 @@
-JeannieHandler = function() {};
+//***********************************
+// 0. make login/logout working!
+// 1. UN DO is very important
+// 2. and delete last input => 'undo said'
+//***********************************
+
+//TODO require('common.js');
+var common = new Common();
+JeannieHandler = function() {
+    this.strToNo = {};    
+    this.noArray = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+    var size = this.noArray.length;
+    for (var i = 0; i < size; i++) {
+        this.strToNo[this.noArray[i]] = i;
+    }
+    for (i = 0; i < size; i++) {
+        this.strToNo[i + ""] = i;
+        this.noArray.push(i + "");
+    }
+};
+
+// accept match only if command is word (not a part of a word)
+JeannieHandler.prototype.isMatch = function(msg, command) {
+    if(common.isArray(command)) {
+        if(this.getMatch(msg, command))
+            return true;
+        else
+            return false;
+    }
+    
+    return this.getMatch(msg, command) >= 0;
+}
+
+JeannieHandler.prototype.getMatch = function(msg, command) {
+    var index = 0;
+    if(common.isArray(command)) {
+        for(var key in command) {
+            var current = command[key];
+            index = this.getMatch(msg, current);
+            if(index >= 0)
+                return [current, index];
+        }
+        return undefined;
+    } 
+    
+    var cl = command.length;
+    do {
+        index = msg.indexOf(command, index);
+        if(index < 0)
+            return undefined;
+        if(index >= 0 && msg.charAt(index + cl) == ' ')
+            return index;            
+        
+        index += 1;
+    } while(true);        
+}
+
+// accept command only if it is at the end or at the beginning of the message
+JeannieHandler.prototype.isCommand = function(msg, command) {
+    if(common.isArray(command)) {
+        if(this.getCommand(msg, command))
+            return true;
+        else
+            return false;
+    }
+    
+    return this.getCommand(msg, command) >= 0;
+}
+JeannieHandler.prototype.getCommand = function(msg, command) {
+    var index;
+    if(common.isArray(command)) {
+        for(var key in command) {
+            var current = command[key];
+            index = this.getCommand(msg, current);
+            if(index >= 0)
+                return [current, index];
+        }
+        return undefined;
+    }
+    
+    index = msg.indexOf(command);
+    if(index == 0 || index == msg.length)
+        return index;
+    // if command is at the end but also within the message
+    if(msg.endsWith(command))
+        return msg.length;
+    return -1;
+}
 
 // guess handler from message
 JeannieHandler.prototype.calcInfo = function(msg){
     var lowerMsg = msg.toLowerCase();
-    var info = {};
-    if(lowerMsg.indexOf('clear messages') == 0) {
+    var info = {};    
+    if(this.isCommand(lowerMsg, ['clear messages', 'delete all lines', 'delete all words', 'delete content', 'delete text'])) {
         info.handler = 'clear messages';
-    } else if(lowerMsg.indexOf('clear last') == 0) {
+        return info;
+    } else if(this.isCommand(lowerMsg, 'clear last')) {
         info.handler = 'clear last';
-    } else if(lowerMsg.indexOf('goto beginning') == 0 || lowerMsg.indexOf('go to beginning') == 0) {
+        return info;
+    } else if(this.isCommand(lowerMsg, ['goto beginning', 'go to beginning'])) {
         info.handler = 'goto beginning';
-    // sende email    
-    } else if(lowerMsg.indexOf("send mail") == 0 || lowerMsg.indexOf("send email") == 0) {
-        info.handler = 'send email';
-    // TODO accept new line at msg end too + accept next line
-    } else if(lowerMsg.indexOf("new line") == 0 || lowerMsg.indexOf("new paragraph") == 0) {
-        var index1 = lowerMsg.indexOf("new line");
-        var index2 = lowerMsg.indexOf("new paragraph");
-        if(index1 < 0 || index2 >= 0 && index1 < index2)
-            index1 = index2 + "new paragraph".length;
-        else
-            index1 = index1 + "new line".length;
+        return info;
+    } else if(this.isCommand(lowerMsg, ["send mail", "send email", "sende email", "sende mail"])) {
+        info.handler = 'send email';    
+        return info;
+    } 
+        
+    var ret = this.deleteLast(lowerMsg, 'line');
+    if(ret)
+        return ret;
+    
+    ret = this.deleteLast(lowerMsg, 'word');
+    if(ret)
+        return ret;
+    
+    ret = this.getCommand(lowerMsg, ["new line", "next line", "new paragraph"])    
+    if(ret) {        
+        val = ret[0];
+        var index1 = ret[1] + val.length;               
         var str = msg.substring(index1);
         index1 = str.indexOf(' ')
         if(index1 >= 0)
-            str = str.substring(index1+1);
+            str = str.substring(index1 + 1);
     
         info.handler = 'new line';
         info.parameters = str;        
@@ -35,4 +131,28 @@ JeannieHandler.prototype.calcInfo = function(msg){
     return info;
 }
 
+JeannieHandler.prototype.deleteLast = function(lowerMsg, lineOrWord) {
+    var info = {};
+    var val = 1;
+    if(this.isCommand(lowerMsg, ["delete last " + lineOrWord, "delete " + lineOrWord])) {
+        info.handler = 'delete ' + lineOrWord;
+        info.parameters = val;
+        return info;
+    } else {        
+        var deleteIndex = lowerMsg.indexOf('delete');                
+        var noRes = this.getMatch(lowerMsg, this.noArray);
+        if(noRes) {
+            var number = this.strToNo[noRes[0]];
+            if(number !== undefined)
+                val = number;
+        }
+        
+        if(deleteIndex == 0 && (lowerMsg.endsWith(lineOrWord) || lowerMsg.endsWith(lineOrWord + 's'))) {
+            info.handler = 'delete ' + lineOrWord;
+            info.parameters = val;
+            return info;
+        }
+    }
+    return undefined;
+}
 exports.calcInfo = JeannieHandler.prototype.calcInfo;

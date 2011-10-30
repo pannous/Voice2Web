@@ -1,3 +1,7 @@
+// bad IE
+if (typeof console === "undefined")
+    console = { log: function() { } };
+
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
@@ -22,3 +26,7 @@ Common.prototype.clone = function(doc) {
     }
     return newdoc;
 };
+
+Common.prototype.isArray = function(someVar) {
+    return Object.prototype.toString.call(someVar) === '[object Array]';
+}

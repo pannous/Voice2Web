@@ -1,11 +1,13 @@
 require.paths.unshift(__dirname + '/../../lib/');
 
+require('./public/js/common.js');
+require('./handler.js');
+
 var express = require('express')
 , stylus = require('stylus')
 , nib = require('nib')
 , sio = require('socket.io')
-, common = require('./public/js/common.js')
-, handler = require('./handler.js');
+, handler = new JeannieHandler();
 
 var app = express.createServer();
 

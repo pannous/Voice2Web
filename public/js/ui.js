@@ -54,7 +54,7 @@ function initWebSocket(botName) {
         socket.on('reconnecting', function () {
             networkMsg(null, 'Attempting to re-connect to the server');
         });
-
+        
         socket.on('error', function (e) {
             networkMsg(e, 'A unknown network error occurred');
         });                
@@ -66,7 +66,7 @@ var handlers = {};
 handlers['default'] = function(msg) {
     var txt = $("#lines").val();
     if(txt && txt.length > 0) {        
-        if(txt.endsWith('\n'))
+        if(txt.endsWith('\n') || txt.endsWith(' '))
             $("#lines").val(txt + msg);
         else
             $("#lines").val(txt + " " + msg);
@@ -92,17 +92,65 @@ handlers['goto beginning'] = function() {
     $('#lines').selectRange(0, 0);
 }
 
-handlers['delete line'] = function() {
-    alert('not yet implemented');
+// TODO test this
+var helperFn = function(params, newlineOrSpace) {
+    var lines = $('#lines').val();
+    var changed = false;
+    var maxIndex = lines.length - 1;
+    if(lines.endsWith(newlineOrSpace))
+        maxIndex -= 1;
+    
+    for(var i = 0; i < params; i += 1) {        
+        while(maxIndex >= 0 && lines[maxIndex] != newlineOrSpace) {
+            maxIndex -= 1;
+        }
+        changed = true;
+        if(maxIndex >= 0) {            
+            lines = lines.substring(0, maxIndex + 1);
+            // in case of one remaining char which is '\n' or space => remove it
+            if(lines.length == 1)
+                lines = "";            
+        } else {
+            lines = "";
+            break;
+        }
+        
+        maxIndex = lines.length -1;
+        
+    }
+    
+    if(changed)
+        $('#lines').val(lines);
+// TODO user feedback
+}
+
+handlers['delete line'] = function(params) {
+    helperFn(params, '\n');    
+}
+
+handlers['delete word'] = function(params) {    
+    helperFn(params, ' ');
 }
 
 function message (from, msg) {
     console.log(from +", msg:" + msg);        
     socket.emit('handlerInfo', msg, function (info) {    
-        if(info.handler)
-            handlers[info.handler](info.parameters);
-        else
-            handlers['default'](msg); 
+        if(info.handler) {
+            var h = handlers[info.handler]
+            if(h) {
+                try {
+                    h(info.parameters);
+                } catch(ex) {
+                    console.log('problem when executing:' + info.handler + ", with " + info.parameters + ", error:" + ex + ", msg:" + msg);
+                }                
+            } else
+                console.log('no handler implemented:' + info.handler + ", message:" + msg);
+                
+            return;
+        } else
+            console.log('no handler was found for message:' + msg);        
+            
+        handlers['default'](msg); 
     });    
 }
 
@@ -154,26 +202,42 @@ $(function () {
     
     $('#email-messages').click(function () {        
         message('', 'send email');
+        focus();
         return false;
     });
     
     $('#clear-messages').click(function () {        
         message('', 'clear messages');
+        focus();
         return false;
     });
     
-    $('#del-last-input').click(function () {        
-        message('', 'delete last');
+    //    $('#del-last-input').click(function () {        
+    //        message('', 'delete input');
+    //        return false;
+    //    });
+
+    $('#del-last-line').click(function () {        
+        message('', 'delete line');
+        focus();
+        return false;
+    });
+    
+    $('#del-last-word').click(function () {        
+        message('', 'delete word');
+        focus();
         return false;
     });
     
     $('#new-line').click(function () {        
         message('', 'new line');
+        focus();
         return false;
     });
     
     $('#goto-start').click(function () {        
         message('', "goto beginning");
+        return false;
     });
     
     $('#botname-expand').click(function () {        
@@ -190,6 +254,10 @@ $(function () {
 
 function clear () {        
     $('#message').val('').focus();
+}
+
+function focus () {        
+    $('#message').focus();
 }
 
 function getAllText () {    

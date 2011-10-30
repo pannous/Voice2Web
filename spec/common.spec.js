@@ -24,4 +24,11 @@ describe("commonjs", function() {
         expect(true).toEqual('\t\n'.endsWith('\n'));            
         expect(false).toEqual('\t\n'.endsWith('\n '));            
     });
+    
+    it("array", function() {
+        var common = new Common();
+        
+        expect(false).toEqual(common.isArray('\n '));            
+        expect(true).toEqual(common.isArray(['\n ']));            
+    });
 });
