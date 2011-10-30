@@ -6,16 +6,20 @@ body {
 #chat {
     float: left;
 }
-
+#lines {
+    font-size: 16px;
+}
 #buttons {
     float: right;    
 }
 #buttons button {
     width: 100px;
 }
-
+#nick {
+    width: 250px;
+}
 #botname {
-    border: gray dashed 1px;
+    border: gray solid 1px;
     padding-left: 10px;
     padding-right: 10px;
     margin-top: 5px;

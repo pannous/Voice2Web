@@ -3,7 +3,9 @@ require.paths.unshift(__dirname + '/../../lib/');
 var express = require('express')
 , stylus = require('stylus')
 , nib = require('nib')
-, sio = require('socket.io');
+, sio = require('socket.io')
+, common = require('./public/js/common.js')
+, handler = require('./handler.js');
 
 var app = express.createServer();
 
@@ -81,7 +83,7 @@ app.listen(3000, function () {
 });
 
 var io = sio.listen(app);
-io.sockets.on('connection' , function (freshClient) {    
+io.sockets.on('connection' , function (freshClient) {
     console.log('[BROWSER] client connected without nick: ' + freshClient.header);
     freshClient.on('botname', function (botname, callback) {
         // AFTER setting botnames
@@ -94,7 +96,11 @@ io.sockets.on('connection' , function (freshClient) {
 
                     delete botnames[freshClient.botname];               
                     freshClient.broadcast.emit('botnames', getNameCount(botnames));
-                });                
+                });
+                freshClient.on('handlerInfo', function (message, callback) {
+                    callback(handler.calcInfo(message));
+                });
+                
                 console.log('NEW client connected: ' + freshClient.botname);                
                 if(oldClient) {
                     var om = oldClient.oldmessages;
