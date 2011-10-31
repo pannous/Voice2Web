@@ -1,18 +1,95 @@
-// TODO settings for production:
-//    io.enable('browser client minification');
-//    io.enable('browser client etag');
-//    io.enable('browser client gzip');
-//    io.set('log level', 1);
-//    io.set('transports', [
-//        'websocket'
-//        , 'flashsocket'
-//        , 'htmlfile'
-//        , 'xhr-polling'
-//        , 'jsonp-polling'
-//        ]);
+TextManager = function() {
+    this.cachedText = undefined;
+    this.work = [];
+    this.maxWorkLength = 0;
+}
+
+TextManager.prototype.text = function() {
+    if(this.cachedText === undefined) {
+        this.cachedText = "";        
+        for(var i = 0; i < this.maxWorkLength; i+=1) {
+            var w = this.work[i];
+            if(w.add)
+                this.applyAdd(w.text, w.index);        
+            else
+                this.applyRemove(w.text, w.index);
+        }
+    }
+    return this.cachedText;
+}
+
+TextManager.prototype.clear = function() {        
+    this.remove(0, this.text().length);
+    return this;
+}
+TextManager.prototype.remove = function(fromIndex, length) {        
+    if(length <= 0)
+        return this;
+    
+    var removedTxt = this.text().slice(fromIndex, fromIndex + length);
+    this.applyRemove(removedTxt, fromIndex);
+    this.work.push({
+        'add' : false, 
+        'text': removedTxt, 
+        'index' : fromIndex
+    });
+    this.maxWorkLength += 1;
+    return this;
+}
+TextManager.prototype.applyRemove = function(txt, index) {    
+    var oldTxt = this.text();
+    this.cachedText = oldTxt.slice(0, index) + oldTxt.slice(index + txt.length, index + txt.length + oldTxt.length);
+    return this;
+}
+TextManager.prototype.add = function(txt, index) {        
+    // 'forget' all work greater maxWorkLength
+    if(this.maxWorkLength < this.work.length) {
+        this.work = this.work.slice(0, this.maxWorkLength);
+    }
+    this.applyAdd(txt, index);
+    this.work.push({
+        'add' : true, 
+        'text': txt, 
+        'index' : index 
+    });
+    this.maxWorkLength += 1;
+    return this;
+}
+
+TextManager.prototype.applyAdd = function(changedTxt, index) {
+    var oldTxt = this.text();
+    if(index && oldTxt.length > index)
+        this.cachedText = oldTxt.slice(0, index) + changedTxt + oldTxt.slice(index);
+    else
+        this.cachedText += changedTxt;
+    return this;
+}
+
+TextManager.prototype.undo = function() {    
+    if(this.maxWorkLength > 0) {
+        this.cachedText = undefined;
+        this.maxWorkLength -= 1;
+    }
+    return this;
+}
+
+TextManager.prototype.redo = function() {
+    if(this.maxWorkLength < this.work.length) {
+        this.cachedText = undefined;
+        this.maxWorkLength += 1;
+    }
+    return this;
+}
+
 
 var socket = io.connect('http://localhost:3000/');
 var initialized;
+
+//io.enable('browser client minification');
+//io.enable('browser client etag');
+//io.enable('browser client gzip');
+//io.set('log level', 1);
+//io.set('transports', ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling']);
 
 function initWebSocket(botName) {
     $('#botname-err').css('visibility', 'hidden');
@@ -29,7 +106,7 @@ function initWebSocket(botName) {
             if (set) {            
                 networkMsg(set, 'Connected');
                 initialized = botName;
-                clear();
+                clearInput();
                 return $('#chat').addClass('botname-set');
             }
             $('#botname-err').css('visibility', 'visible');
@@ -61,17 +138,16 @@ function initWebSocket(botName) {
     });        
 }
 
+var tm = new TextManager();
 var handlers = {};
-
 handlers['default'] = function(msg) {
-    var txt = $("#lines").val();
-    if(txt && txt.length > 0) {        
-        if(txt.endsWith('\n') || txt.endsWith(' '))
-            $("#lines").val(txt + msg);
-        else
-            $("#lines").val(txt + " " + msg);
-    } else
-        $('#lines').val(msg);
+    var txt = tm.text();
+    if(txt.length == 0 || txt.endsWith('\n') || txt.endsWith(' '))
+        tm.add(msg);
+    else
+        tm.add(" " + msg);   
+    
+    $('#lines').val(tm.text());
 }
 
 handlers['send email'] = function() {
@@ -79,17 +155,27 @@ handlers['send email'] = function() {
 }
 
 handlers['clear messages'] = function() {
+    tm.clear();
     $('#lines').val('');
-    clear();
+    clearInput();
 }
 
 handlers['new line'] = function(msg) {
-    $('#lines').val($('#lines').val() + "\n" + msg);
-    clear();
+    tm.add("\n" + msg);
+    $('#lines').val(tm.text());
+    clearInput();
 }
 
 handlers['goto beginning'] = function() {
     $('#lines').selectRange(0, 0);
+}
+
+handlers['undo'] = function() {    
+    $('#lines').val(tm.undo().text());
+}
+
+handlers['redo'] = function() {    
+    $('#lines').val(tm.redo().text());
 }
 
 // TODO test this
@@ -163,7 +249,7 @@ function networkMsg (error, msg) {
 function sendEmail() { 
     // seperate addresses with a ;
     var addresses = "";
-    var body = getAllText();
+    var body = tm.text();
     body = body.replace(/\n/g, "%0D%0A");    
     var subject = "Send from my webvoice"; 
     var href = "mailto:" + addresses + "?" + "subject=" + subject + "&" + "body=" + body;
@@ -195,7 +281,7 @@ $(function () {
     $('#send-message').click(function () {
         message($('#nick').val(), $('#message').val());
         socket.emit('user message', $('#nick').val(), $('#message').val());
-        clear();
+        clearInput();
         $('#lines').get(0).scrollTop = 10000000;
         return false;
     });    
@@ -240,6 +326,16 @@ $(function () {
         return false;
     });
     
+    $('#undo').click(function () {        
+        message('', "undo");
+        return false;
+    });
+    
+    $('#redo').click(function () {        
+        message('', "redo");
+        return false;
+    });
+    
     $('#botname-expand').click(function () {        
         if($('#botname').is(":visible")) {
             $('#botname-expand-btn').text('Show Login');
@@ -252,16 +348,12 @@ $(function () {
     });
 });
 
-function clear () {        
+function clearInput () {        
     $('#message').val('').focus();
 }
 
 function focus () {        
     $('#message').focus();
-}
-
-function getAllText () {    
-    return $("#lines").val();
 }
 
 $.fn.selectRange = function(start, end) {

@@ -78,4 +78,11 @@ describe("ui", function() {
         expect(true).toEqual(h.isCommand('my comman sdfij söodfh sdf message', ['my command', 'message']));
         expect(false).toEqual(h.isCommand('my comman sdfij söodfh sdf messages', ['my command', 'message']));
     });
+    
+    it("undo", function() {
+        var h = new JeannieHandler();
+        expect({
+            "handler" : "undo"            
+        }).toEqual(h.calcInfo('undo'));
+    });
 });

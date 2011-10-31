@@ -1,7 +1,10 @@
 //***********************************
-// 0. make login/logout working!
-// 1. UN DO is very important
-// 2. and delete last input => 'undo said'
+// - make login/logout working!
+// - correct to: ...
+//   correct this to: ...
+// - UN DO is very important
+//   and delete last input => 'undo said'
+// - remove is synomyn of delete
 //***********************************
 
 //TODO require('common.js');
@@ -91,7 +94,7 @@ JeannieHandler.prototype.getCommand = function(msg, command) {
 JeannieHandler.prototype.calcInfo = function(msg){
     var lowerMsg = msg.toLowerCase();
     var info = {};    
-    if(this.isCommand(lowerMsg, ['clear messages', 'delete all lines', 'delete all words', 'delete content', 'delete text'])) {
+    if(this.isCommand(lowerMsg, ['clear messages', 'delete content', 'remove content', 'delete all', 'remove all'])) {
         info.handler = 'clear messages';
         return info;
     } else if(this.isCommand(lowerMsg, 'clear last')) {
@@ -99,6 +102,9 @@ JeannieHandler.prototype.calcInfo = function(msg){
         return info;
     } else if(this.isCommand(lowerMsg, ['goto beginning', 'go to beginning'])) {
         info.handler = 'goto beginning';
+        return info;
+    } else if(this.isCommand(lowerMsg, ["redo"])) {
+        info.handler = 'redo';    
         return info;
     } else if(this.isCommand(lowerMsg, ["send mail", "send email", "sende email", "sende mail"])) {
         info.handler = 'send email';    
@@ -112,6 +118,11 @@ JeannieHandler.prototype.calcInfo = function(msg){
     ret = this.deleteLast(lowerMsg, 'word');
     if(ret)
         return ret;
+    
+    if(this.isCommand(lowerMsg, ['undo', 'delete', 'revert'])) {
+        info.handler = 'undo';
+        return info;
+    }
     
     ret = this.getCommand(lowerMsg, ["new line", "next line", "new paragraph"])    
     if(ret) {        
@@ -134,12 +145,15 @@ JeannieHandler.prototype.calcInfo = function(msg){
 JeannieHandler.prototype.deleteLast = function(lowerMsg, lineOrWord) {
     var info = {};
     var val = 1;
-    if(this.isCommand(lowerMsg, ["delete last " + lineOrWord, "delete " + lineOrWord])) {
+    if(this.isCommand(lowerMsg, ["delete last " + lineOrWord, "delete " + lineOrWord, 
+        "remove last " + lineOrWord, "remove " + lineOrWord, ])) {
         info.handler = 'delete ' + lineOrWord;
         info.parameters = val;
         return info;
-    } else {        
-        var deleteIndex = lowerMsg.indexOf('delete');                
+    } else {                
+        var deleteIndex = lowerMsg.indexOf('delete');
+        if(deleteIndex < 0)
+            deleteIndex = lowerMsg.indexOf('remove');
         var noRes = this.getMatch(lowerMsg, this.noArray);
         if(noRes) {
             var number = this.strToNo[noRes[0]];

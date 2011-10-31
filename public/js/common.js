@@ -13,8 +13,8 @@ String.prototype.trim = function() {
     return this.replace(/^\s+|\s+$/g, '');
 };
 
-Common = function() {
-    };
+Common = function() {    
+};
 
 if (typeof module !== "undefined") module.exports = Common
 
