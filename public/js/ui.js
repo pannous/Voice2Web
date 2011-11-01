@@ -219,13 +219,15 @@ var changeDetection = function() {
         
     var pos = $('#lines').getCaret();
     var diffLen = newVal.length - oldVal.length;
-    if(diffLen > 0)
-        tm.add(newVal.slice(pos, pos + diffLen), pos);    
-    else
+    var addedText;
+    if(diffLen > 0) {
+        addedText = newVal.slice(pos - diffLen, pos)
+        tm.add(addedText, pos);    
+    } else
         tm.remove(pos, -diffLen);
         
     $('#lines').val(tm.text());
-    //console.log(pos + " " + diffLen + " " + oldVal + "|" + newVal);
+console.log(pos + " " + diffLen + " " + addedText);
 }
 
 function message (from, msg) {
