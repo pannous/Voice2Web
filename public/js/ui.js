@@ -208,6 +208,23 @@ handlers['delete word'] = function(params) {
     $('#lines').val(tm.deleteLastXY(' ', params).text());
 }
 
+var changeDetection = function() {
+    var oldVal = tm.text();
+    var newVal = $('#lines').val();
+    if(oldVal == newVal)
+        return;
+        
+    var pos = $('#lines').getCaret();
+    var diffLen = newVal.length - oldVal.length;
+    if(diffLen > 0)
+        tm.add(newVal.slice(pos, pos + diffLen), pos);    
+    else
+        tm.remove(pos, -diffLen);
+        
+    $('#lines').val(tm.text());
+    //console.log(pos + " " + diffLen + " " + oldVal + "|" + newVal);
+}
+
 function message (from, msg) {
     console.log(from +", msg:" + msg);        
     socket.emit('handlerInfo', msg, function (info) {    
@@ -253,6 +270,20 @@ function sendEmail() {
 $(function () {    
     $('#botname-expand').hide();
     $('#lines').css("width", "500").css("height", "250");
+//    var previousSelection;
+//    $('#lines').bind('keydown', function(e) {                
+//        previousSelection = $('#lines').getSelection();
+//    });
+    $('#lines').bind('keyup', function(e) {                
+        changeDetection();
+    });
+    // for detecting pasting we need a bit timeout!!
+    $('#lines').bind('paste', function(e) {        
+        setTimeout(function() {
+            changeDetection();
+        }, 1);
+    });
+
     var botName = $.cookie("USER");
     if(botName) {
         $('#nick').val(botName);
@@ -360,3 +391,42 @@ $.fn.selectRange = function(start, end) {
         }
     });
 };
+
+$.fn.getCaret = function() {
+    // a jquery selector returns a element collection so do:
+    var el = $(this)[0];
+    if (el.selectionStart) {
+        return el.selectionStart;
+    } else if (document.selection) {
+        this.focus();
+
+        var r = document.selection.createRange();
+        if (r == null)
+            return 0;    
+
+        var re = el.createTextRange(),
+        rc = re.duplicate();
+        re.moveToBookmark(r.getBookmark());
+        rc.setEndPoint('EndToStart', re);
+
+        return rc.text.length;
+    } 
+    return 0;
+}
+
+$.fn.getSelection = function () {
+    var el = $(this)[0];
+    if (el.setSelectionRange) {
+        //FF
+        return $(this).val().substring(el.selectionStart, el.selectionEnd);
+    } else if (document.selection && document.selection.createRange) {
+        //IE
+        //Makes sure tags are being added to the textarea
+        //el.focus(); 
+        return document.selection.createRange();        
+    } else {
+        console.log('ERROR: unsupported browser for getSelection');
+        return "";
+    } 
+}
+

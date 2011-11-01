@@ -94,7 +94,8 @@ JeannieHandler.prototype.getCommand = function(msg, command) {
 JeannieHandler.prototype.calcInfo = function(msg){
     var lowerMsg = msg.toLowerCase();
     var info = {};    
-    if(this.isCommand(lowerMsg, ['clear messages', 'delete content', 'remove content', 'delete all', 'remove all'])) {
+    if(this.isCommand(lowerMsg, ['clear messages', 'remove messages', 'delete content', 
+            'remove content', 'delete all', 'remove all'])) {
         info.handler = 'clear messages';
         return info;
     } else if(this.isCommand(lowerMsg, 'clear last')) {
