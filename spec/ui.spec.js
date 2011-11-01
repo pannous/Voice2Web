@@ -26,7 +26,7 @@ describe("textmanager", function() {
         expect("textnew\ny<").toEqual(tm.redo().text());
     });
     
-    it("more undo&redo", function() {
+    it("empty undo", function() {
         var tm = new TextManager();        
         expect("").toEqual(tm.undo().text());
         tm = new TextManager();        
@@ -46,10 +46,29 @@ describe("textmanager", function() {
         expect("").toEqual(tm.redo().text());
     });
     
+    it("more complex clear", function() {
+        var tm = new TextManager();
+        expect("hello world").toEqual(tm.add('hello world').text());
+        expect("hello world hello world").toEqual(tm.add(' hello world').text());
+        expect("hello world").toEqual(tm.undo().text());        
+        expect("").toEqual(tm.clear().text());
+        expect("hello world").toEqual(tm.add('hello world').text());        
+        expect("").toEqual(tm.undo().text());
+    });
+    
     it("empty clear", function() {
         var tm = new TextManager();        
         expect("").toEqual(tm.clear().text());
     });
+    
+    it("delete all&undo", function() {
+        var tm = new TextManager();        
+        expect("text").toEqual(tm.add('text').text());       
+        expect("text pest xy").toEqual(tm.add(' pest xy').text());
+        expect("").toEqual(tm.clear().text());
+        expect("text pest xy").toEqual(tm.undo().text());
+        expect("text").toEqual(tm.undo().text());
+    })
     
     it("remove", function() {
         var tm = new TextManager();        

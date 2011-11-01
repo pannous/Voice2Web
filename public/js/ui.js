@@ -5,7 +5,7 @@ TextManager = function() {
 }
 
 TextManager.prototype.text = function() {
-    if(this.cachedText === undefined) {
+    if(this.cachedText === undefined) {        
         this.cachedText = "";        
         for(var i = 0; i < this.maxWorkLength; i+=1) {
             var w = this.work[i];
@@ -26,6 +26,7 @@ TextManager.prototype.remove = function(fromIndex, length) {
     if(length <= 0)
         return this;
     
+    this.forget();
     var removedTxt = this.text().slice(fromIndex, fromIndex + length);
     this.applyRemove(removedTxt, fromIndex);
     this.work.push({
@@ -38,14 +39,16 @@ TextManager.prototype.remove = function(fromIndex, length) {
 }
 TextManager.prototype.applyRemove = function(txt, index) {    
     var oldTxt = this.text();
-    this.cachedText = oldTxt.slice(0, index) + oldTxt.slice(index + txt.length, index + txt.length + oldTxt.length);
+    this.cachedText = oldTxt.slice(0, index) + oldTxt.slice(index + txt.length);
     return this;
 }
+// 'forget' all work greater maxWorkLength
+TextManager.prototype.forget = function() {        
+    if(this.maxWorkLength < this.work.length)
+        this.work = this.work.slice(0, this.maxWorkLength);    
+}
 TextManager.prototype.add = function(txt, index) {        
-    // 'forget' all work greater maxWorkLength
-    if(this.maxWorkLength < this.work.length) {
-        this.work = this.work.slice(0, this.maxWorkLength);
-    }
+    this.forget();
     this.applyAdd(txt, index);
     this.work.push({
         'add' : true, 
@@ -226,7 +229,7 @@ var changeDetection = function() {
 }
 
 function message (from, msg) {
-    console.log(from +", msg:" + msg);        
+    console.log("message:" + msg);        
     socket.emit('handlerInfo', msg, function (info) {    
         if(info.handler) {
             var h = handlers[info.handler]

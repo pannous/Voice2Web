@@ -170,4 +170,5 @@ JeannieHandler.prototype.deleteLast = function(lowerMsg, lineOrWord) {
     }
     return undefined;
 }
-exports.calcInfo = JeannieHandler.prototype.calcInfo;
+
+if (typeof module !== "undefined") module.exports.calcInfo = JeannieHandler.prototype.calcInfo;
