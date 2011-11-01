@@ -2,6 +2,7 @@ var http = require('http');
 
 var user = 'Jeannie ifc tdd dyxhxyxy';
 var msg = 'hello world';
+var host = 'jetsli.de';
 
 process.argv.forEach(function (val, index, array) {
     var sp = val.split('=');
@@ -9,14 +10,17 @@ process.argv.forEach(function (val, index, array) {
         msg = sp[1];
     if(sp[0] == 'user')
         user = sp[1];
+    if(sp[0] == 'host')
+        host = sp[1];
 });
 
+console.log('host:' + host + ', user:' + user+ ', message:' + msg);
 var data = JSON.stringify({
     'user': user, 
     'message': msg
 });
 
-var host = '0.0.0.0';
+
 var cookie = 'something=anything';
 var client = http.createClient(3000, host);
 var headers = {

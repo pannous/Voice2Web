@@ -107,7 +107,7 @@ TextManager.prototype.deleteLastXY = function(newlineOrSpace, count) {
 }
 
 
-var socket = io.connect('http://localhost:3000/');
+var socket = io.connect();
 var initialized;
 
 //io.enable('browser client minification');
