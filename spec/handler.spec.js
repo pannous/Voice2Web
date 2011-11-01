@@ -24,6 +24,10 @@ describe("ui", function() {
         }).toEqual(h.calcInfo('delete all lines'));
         
         expect({
+            "handler" : "undo"            
+        }).toEqual(h.calcInfo('delete lost to work'));
+        
+        expect({
             "handler" : "delete line",
             "parameters" : 1
         }).toEqual(h.calcInfo('delete line'));
@@ -47,6 +51,16 @@ describe("ui", function() {
             "handler" : "delete line",
             "parameters" : 2
         }).toEqual(h.calcInfo('delete last 2 lines'));        
+        
+        expect({
+            "handler" : "delete word",
+            "parameters" : 2
+        }).toEqual(h.calcInfo('delete last two words'));        
+        
+        expect({
+            "handler" : "delete word",
+            "parameters" : 2
+        }).toEqual(h.calcInfo('delete two words'));        
     });
     
     it("delete word", function() {

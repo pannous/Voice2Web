@@ -65,3 +65,14 @@ describe("textmanager", function() {
         expect("").toEqual(tm.remove(0, 10).text());
     });
 });
+
+describe("delete last xy", function() {
+    it("delete last words", function() {
+        var tm = new TextManager();        
+        expect("text").toEqual(tm.add('text').text());       
+        expect("text pest xy").toEqual(tm.add(' pest xy').text());
+        expect("text ").toEqual(tm.deleteLastXY(' ', 2).text());
+        expect("text pest xy").toEqual(tm.undo().text());
+        expect("text").toEqual(tm.undo().text());
+    })
+});

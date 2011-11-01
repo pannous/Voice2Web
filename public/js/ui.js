@@ -81,6 +81,28 @@ TextManager.prototype.redo = function() {
     return this;
 }
 
+TextManager.prototype.deleteLastXY = function(newlineOrSpace, count) {    
+    var lines = this.text();    
+    var maxIndex = lines.length - 1;    
+    var oldMaxIndex = maxIndex;
+    for(var i = 0; i < count; i += 1) {
+        while(maxIndex >= 0 && lines[maxIndex] == newlineOrSpace) {
+            maxIndex -= 1;
+        }
+    
+        while(maxIndex >= 0 && lines[maxIndex] != newlineOrSpace) {
+            maxIndex -= 1;
+        }        
+        if(maxIndex < 0)            
+            break;                
+    }
+    
+    if(oldMaxIndex != maxIndex)
+        this.remove(maxIndex + 1, lines.length - maxIndex);
+        
+    return this;
+}
+
 
 var socket = io.connect('http://localhost:3000/');
 var initialized;
@@ -178,44 +200,12 @@ handlers['redo'] = function() {
     $('#lines').val(tm.redo().text());
 }
 
-// TODO test this
-var helperFn = function(params, newlineOrSpace) {
-    var lines = $('#lines').val();
-    var changed = false;
-    var maxIndex = lines.length - 1;
-    if(lines.endsWith(newlineOrSpace))
-        maxIndex -= 1;
-    
-    for(var i = 0; i < params; i += 1) {        
-        while(maxIndex >= 0 && lines[maxIndex] != newlineOrSpace) {
-            maxIndex -= 1;
-        }
-        changed = true;
-        if(maxIndex >= 0) {            
-            lines = lines.substring(0, maxIndex + 1);
-            // in case of one remaining char which is '\n' or space => remove it
-            if(lines.length == 1)
-                lines = "";            
-        } else {
-            lines = "";
-            break;
-        }
-        
-        maxIndex = lines.length -1;
-        
-    }
-    
-    if(changed)
-        $('#lines').val(lines);
-// TODO user feedback
-}
-
 handlers['delete line'] = function(params) {
-    helperFn(params, '\n');    
+    $('#lines').val(tm.deleteLastXY('\n', params).text());
 }
 
 handlers['delete word'] = function(params) {    
-    helperFn(params, ' ');
+    $('#lines').val(tm.deleteLastXY(' ', params).text());
 }
 
 function message (from, msg) {
@@ -269,7 +259,7 @@ $(function () {
         initWebSocket(botName);
     }
         
-    $('#set-botname').click(function (ev) {        
+    $('#set-botname').submit(function (ev) {        
         var botName = $('#nick').val();        
         $.cookie("USER", botName, {
             expires : 10
@@ -278,7 +268,7 @@ $(function () {
         return false;
     });
 
-    $('#send-message').click(function () {
+    $('#send-message').submit(function () {
         message($('#nick').val(), $('#message').val());
         socket.emit('user message', $('#nick').val(), $('#message').val());
         clearInput();
