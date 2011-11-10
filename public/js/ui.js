@@ -384,12 +384,12 @@ function swapLogin() {
 }
 
 function hideLogin() {
-    $('#login-expand-btn').text('Show Login');
+//    $('#login-expand-btn').text('Show Login');
     $('#loginpanel').hide();
 }
 
 function showLogin() {
-    $('#login-expand-btn').text('Hide Login');
+//    $('#login-expand-btn').text('Hide Login');
     $('#loginpanel').show();
 }
 
