@@ -1,5 +1,5 @@
 // bad IE
-if (typeof console === "undefined")
+if (! console )
     console = {
         log: function() { }
     };
