@@ -16,8 +16,7 @@ body {
     width: 140px;
 }
 #nick {
-    width: 280px;
-    float: left;
+    width: 280px;    
 }
 #loginpanel {    
     float: left;
@@ -31,10 +30,6 @@ body {
     border-radius: 5px;
     -moz-border-radius:5px;
     -webkit-border-radius:5px;
-
-    -moz-box-shadow: 3px 3px 3px #888;
-    -webkit-box-shadow: 3px 3px 3px #888;
-    box-shadow: 3px 3px 3px #888;
 }
 
 #botnames {
@@ -55,4 +50,8 @@ body {
 #lines {
     width: 300px;
     height: 250px;
+}
+
+#message {
+    width: 250px;
 }

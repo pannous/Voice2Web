@@ -8,15 +8,14 @@ String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
 
-// Read a page's GET URL variables and return them as an associative array.
-function getUrlVars()
-{
+//** Get Url parameters as hash -> only one parameter key is allowed */
+function getUrlVars() {
     var vars = [], hash;
-    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-    for(var i = 0; i < hashes.length; i++)
-    {
+    var params = window.location.href.slice(window.location.href.indexOf('?') + 1);
+    params = decodeURIComponent(params);
+    var hashes = params.split('&');
+    for(var i = 0; i < hashes.length; i++) {
         hash = hashes[i].split('=');
-        vars.push(hash[0]);
         vars[hash[0]] = hash[1];
     }
     return vars;
