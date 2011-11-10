@@ -119,14 +119,16 @@ var initialized;
 function initWebSocket(botName) {
     $('#login-err').hide();
     if(initialized === botName) {
+        hideLogin();
         console.log('Already initialized with ' + botName)
         return;
     }
     $('#login-expand-form').show();    
     
-    function reconnect() {        
-        if(socket)
-            socket.close();
+    function reconnect() {
+        if(socket)     
+            // TODO why reloading is necessary to make socket working?
+            window.location = window.location;
         
         socket = io.connect();         
         socket.emit('botname', botName, function (set) {
@@ -231,7 +233,7 @@ var changeDetection = function() {
         tm.remove(pos, -diffLen);
         
     $('#lines').val(tm.text());
-console.log(pos + " " + diffLen + " " + addedText);
+    console.log(pos + " " + diffLen + " " + addedText);
 }
 
 function message (from, msg) {
@@ -277,10 +279,10 @@ function sendEmail() {
 
 // DOM manipulation
 $(function () {    
-//    var previousSelection;
-//    $('#lines').bind('keydown', function(e) {                
-//        previousSelection = $('#lines').getSelection();
-//    });
+    //    var previousSelection;
+    //    $('#lines').bind('keydown', function(e) {                
+    //        previousSelection = $('#lines').getSelection();
+    //    });
     $('#lines').bind('keyup', function(e) {                
         changeDetection();
     });
@@ -369,17 +371,29 @@ $(function () {
         return false;
     });
     
-    $('#login-expand-form').click(function () {        
-        if($('#loginpanel').is(":visible")) {
-            $('#login-expand-btn').text('Show Login');
-            $('#loginpanel').slideToggle(300);
-        } else {
-            $('#login-expand-btn').text('Hide Login');
-            $('#loginpanel').slideToggle(300);
-        }
+    $('#login-expand-form').click(function () {
+        swapLogin();
         return false;
     });
 });
+
+function swapLogin() {
+    if($('#loginpanel').is(":visible")) {
+        hideLogin();
+    } else {
+        showLogin();        
+    }
+}
+
+function hideLogin() {
+    $('#login-expand-btn').text('Show Login');
+    $('#loginpanel').hide();
+}
+
+function showLogin() {
+    $('#login-expand-btn').text('Hide Login');
+    $('#loginpanel').show();
+}
 
 function clearInput () {        
     $('#message').val('').focus();
