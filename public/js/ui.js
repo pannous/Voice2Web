@@ -130,7 +130,6 @@ function initWebSocket(botName) {
         socket.emit('botname', botName, function (set) {
             console.log("emit botname " + set);        
             if (set) {
-                hideLogin();
                 networkMsg(set, 'Connected');
                 initialized = botName;
                 clearInput();
