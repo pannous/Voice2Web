@@ -130,7 +130,7 @@ function initWebSocket(botName) {
         socket.emit('botname', botName, function (set) {
             console.log("emit botname " + set);        
             if (set) {
-                $('#loginpanel').slideToggle(400);
+                hideLogin();
                 networkMsg(set, 'Connected');
                 initialized = botName;
                 clearInput();
