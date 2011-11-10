@@ -1,5 +1,5 @@
 body {
-    padding: 30px;
+    padding: 1px;
     font: 18px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -16,14 +16,17 @@ body {
     width: 140px;
 }
 #nick {
-    width: 250px;
+    width: 280px;
+    float: left;
 }
-#botname {
+#loginpanel {    
+    float: left;
     border: gray solid 1px;
     padding-left: 10px;
     padding-right: 10px;
     margin-top: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 5px;    
+    padding-bottom: 5px;
     
     border-radius: 5px;
     -moz-border-radius:5px;
@@ -39,4 +42,17 @@ body {
 }
 #nickname-err {
     visibility: hidden;
+}
+
+#set-botname {    
+    padding-top: 5px;    
+}
+
+#login-err {
+    color: orange;
+}
+
+#lines {
+    width: 300px;
+    height: 250px;
 }

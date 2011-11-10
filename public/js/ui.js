@@ -107,7 +107,7 @@ TextManager.prototype.deleteLastXY = function(newlineOrSpace, count) {
 }
 
 
-var socket = io.connect();
+var socket;
 var initialized;
 
 //io.enable('browser client minification');
@@ -117,24 +117,28 @@ var initialized;
 //io.set('transports', ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling']);
 
 function initWebSocket(botName) {
-    $('#botname-err').css('visibility', 'hidden');
+    $('#login-err').hide();
     if(initialized === botName) {
-        //alert('Already initialized with ' + botName)
+        console.log('Already initialized with ' + botName)
         return;
     }
-    $('#botname-expand').show();
-    $('#botname').hide();
+    $('#login-expand-form').show();    
     
     function reconnect() {        
+        if(socket)
+            socket.close();
+        
+        socket = io.connect();         
         socket.emit('botname', botName, function (set) {
             console.log("emit botname " + set);        
-            if (set) {            
+            if (set) {
+                $('#loginpanel').slideToggle(400);
                 networkMsg(set, 'Connected');
                 initialized = botName;
                 clearInput();
                 return $('#chat').addClass('botname-set');
             }
-            $('#botname-err').css('visibility', 'visible');
+            $('#login-err').show();
         });
     }
     reconnect();     
@@ -273,8 +277,6 @@ function sendEmail() {
 
 // DOM manipulation
 $(function () {    
-    $('#botname-expand').hide();
-    $('#lines').css("width", "500").css("height", "250");
 //    var previousSelection;
 //    $('#lines').bind('keydown', function(e) {                
 //        previousSelection = $('#lines').getSelection();
@@ -289,7 +291,11 @@ $(function () {
         }, 1);
     });
 
-    var botName = $.cookie("USER");
+    
+    var botName = getUrlVars()['botname'];
+    if(!botName)
+        botName = $.cookie("USER");
+    
     if(botName) {
         $('#nick').val(botName);
         initWebSocket(botName);
@@ -304,6 +310,7 @@ $(function () {
         return false;
     });
 
+    // TODO remove that testing in production
     $('#send-message').submit(function () {
         message($('#nick').val(), $('#message').val());
         socket.emit('user message', $('#nick').val(), $('#message').val());
@@ -362,13 +369,13 @@ $(function () {
         return false;
     });
     
-    $('#botname-expand').click(function () {        
-        if($('#botname').is(":visible")) {
-            $('#botname-expand-btn').text('Show Login');
-            $('#botname').hide();
+    $('#login-expand-form').click(function () {        
+        if($('#loginpanel').is(":visible")) {
+            $('#login-expand-btn').text('Show Login');
+            $('#loginpanel').slideToggle(300);
         } else {
-            $('#botname-expand-btn').text('Hide Login');
-            $('#botname').show();
+            $('#login-expand-btn').text('Hide Login');
+            $('#loginpanel').slideToggle(300);
         }
         return false;
     });

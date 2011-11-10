@@ -1,6 +1,6 @@
 var http = require('http');
 
-var user = 'Jeannie ifc tdd dyxhxyxy';
+var user = 'thomas 12345678901234567890';
 var msg = 'hello world';
 var host = 'jetsli.de';
 

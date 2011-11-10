@@ -11,14 +11,14 @@ html
       
   body
     #chat
-      form#botname-expand
-        button#botname-expand-btn Show Login
-      #botname
+      form#login-expand-form
+        button#login-expand-btn Show Login
+      #loginpanel
         form.wrap#set-botname
-          p Please type in your longish bot name and press enter.
+          #text Please type in your longish bot name and press enter.
           input#nick
           #botnames
-          p#botname-err Network Error or bot name too short (20 characters or more)          
+          p#login-err Network Error or bot name too short (15 characters or more)          
       #messages        
         textarea#lines
       form#send-message
