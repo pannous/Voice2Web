@@ -118,18 +118,14 @@ var initialized;
 
 function initWebSocket(botName) {
     $('#login-err').hide();
-//    if(initialized === botName) {
-//        hideLogin();
-//        console.log('Already initialized with ' + botName)
-//        return;
-//    }
+    //    if(initialized === botName) {
+    //        hideLogin();
+    //        console.log('Already initialized with ' + botName)
+    //        return;
+    //    }
     $('#login-expand-form').show();    
     
-    function reconnect() {
-        if(socket)     
-            // TODO why reloading is necessary to make socket working?
-            window.location = window.location;
-        
+    function reconnect() {        
         socket = io.connect();         
         socket.emit('botname', botName, function (set) {
             console.log("emit botname " + set);        
@@ -142,32 +138,33 @@ function initWebSocket(botName) {
             }
             $('#login-err').show();
         });
-    }
-    reconnect();     
-    socket.on('error', function (err) {
-        networkMsg(err, 'Connection failed');
-    });
+
+        socket.on('error', function (err) {
+            networkMsg(err, 'Connection failed');
+        });
     
-    socket.on('connect', function () {        
-        socket.on('botnames', function (botnames) {   
-            $('#botnames').empty().append($('<span>People Online: '+botnames+'</span>'));    
-        });
+        socket.on('connect', function () {        
+            socket.on('botnames', function (botnames) {   
+                $('#botnames').empty().append($('<span>People Online: '+botnames+'</span>'));    
+            });
 
-        socket.on('user message', message);
-        socket.on('reconnect', function () {
-            networkMsg(null, 'Reconnected to the server');
-            reconnect();
-        });
+            socket.on('user message', message);
+            socket.on('reconnect', function () {
+                networkMsg(null, 'Reconnected to the server');
+                reconnect();
+            });
 
-        socket.on('reconnecting', function () {
-            networkMsg(null, 'Attempting to re-connect to the server');
-        });
+            socket.on('reconnecting', function () {
+                networkMsg(null, 'Attempting to re-connect to the server');
+            });
         
-        socket.on('error', function (e) {
-            networkMsg(e, 'A unknown network error occurred');
-            initialized = false;
-        });                
-    });        
+            socket.on('error', function (e) {
+                networkMsg(e, 'A unknown network error occurred');
+                initialized = false;
+            });                
+        });        
+    }
+    reconnect();    
 }
 
 var tm = new TextManager();
