@@ -90,7 +90,7 @@ io.sockets.on('connection' , function (freshClient) {
     freshClient.on('botname', function (botname, callback) {
         // AFTER setting botnames
         var oldClient = botnames[botname];
-        if(botname && botname.length >= 15) {                            
+        if(botname && botname.length >= 15) {
             if(oldClient !== freshClient) {           
                 freshClient.botname = botname;
                 freshClient.on('disconnect', function () {

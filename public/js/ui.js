@@ -109,6 +109,7 @@ TextManager.prototype.deleteLastXY = function(newlineOrSpace, count) {
 
 var socket;
 var initialized;
+var networkState = false;
 
 //io.enable('browser client minification');
 //io.enable('browser client etag');
@@ -126,9 +127,8 @@ function initWebSocket(botName) {
     $('#login-expand-form').show();    
     
     function reconnect() {        
-        socket = io.connect();         
+        socket = io.connect();
         socket.emit('botname', botName, function (set) {
-            console.log("emit botname " + set);        
             if (set) {
                 networkMsg(set, 'Connected');
                 initialized = botName;
@@ -256,9 +256,14 @@ function message (from, msg) {
 }
 
 function networkMsg (error, msg) {   
-    console.log(error);
-    $('#network').empty();
-    $('#network').append($('<p>').append(msg));    
+    // on android resetting will be called every 5 seconds (polling)
+    // and so, when login the UI will be updated/disrupted
+    if(networkState != msg) {
+        networkState = msg;
+        console.log('networkMsg:'+ error);
+        $('#network').empty();
+        $('#network').append($('<p>').append(msg));    
+    }
 }
 
 function sendEmail() { 
