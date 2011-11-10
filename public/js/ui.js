@@ -131,8 +131,7 @@ function initWebSocket(botName) {
         socket.emit('botname', botName, function (set) {
             if (set) {
                 networkMsg(set, 'Connected');
-                initialized = botName;
-                clearInput();
+                initialized = botName;                
                 return $('#chat').addClass('botname-set');
             }
             $('#login-err').show();
