@@ -114,8 +114,10 @@ io.sockets.on('connection' , function (freshClient) {
                     // TODO allow clients under one bot name
                     // use freshClient.join(botname) instead of botnames hash!!??
                     // so that we get a 'room' feature and do not need to handle clear etc on our own
-                    if(oldClient.emit)
+                    if(oldClient.emit) {
                         oldClient.emit('user message', botname, 'WARNING: multiple clients are not supported');                    
+                        oldClient.emit('error', botname);
+                    }
                 }               
                 botnames[botname] = freshClient;
             } else

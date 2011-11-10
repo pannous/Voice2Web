@@ -118,11 +118,11 @@ var initialized;
 
 function initWebSocket(botName) {
     $('#login-err').hide();
-    if(initialized === botName) {
-        hideLogin();
-        console.log('Already initialized with ' + botName)
-        return;
-    }
+//    if(initialized === botName) {
+//        hideLogin();
+//        console.log('Already initialized with ' + botName)
+//        return;
+//    }
     $('#login-expand-form').show();    
     
     function reconnect() {
@@ -165,6 +165,7 @@ function initWebSocket(botName) {
         
         socket.on('error', function (e) {
             networkMsg(e, 'A unknown network error occurred');
+            initialized = false;
         });                
     });        
 }
