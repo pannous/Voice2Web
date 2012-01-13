@@ -1,6 +1,7 @@
 This code stands under Apache License 2
 
-With that server its possible to receive your spoken words from Jeannie:
+With that server its possible to receive your spoken words
+from Jeannie on a browser!
   https://market.android.com/details?id=com.pannous.voice.actions.free&hl=en
 
 Install nodejs v0.6.2 and npm. 
