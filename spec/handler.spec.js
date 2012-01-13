@@ -1,4 +1,3 @@
-// file:///home/peterk/Dokumente/quell/pannous/voice4web/spec/SpecRunner.html?
 describe("ui", function() {
     it("get handler info", function() {
         var h = new JeannieHandler();

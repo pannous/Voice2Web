@@ -1,5 +1,3 @@
-require.paths.unshift(__dirname + '/../../lib/');
-
 require('./public/js/common.js');
 require('./handler.js');
 

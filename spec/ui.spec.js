@@ -1,4 +1,3 @@
-// file:///home/peterk/Dokumente/quell/pannous/voice4web/spec/SpecRunner.html?
 describe("textmanager", function() {
     it("simple undo", function() {
         var tm = new TextManager();        

@@ -1,4 +1,3 @@
-// file:///home/peterk/Dokumente/quell/pannous/voice4web/spec/SpecRunner.html?
 describe("commonjs", function() {
     it("common", function() {
         var common = new Common();

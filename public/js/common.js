@@ -4,8 +4,16 @@ if (! console )
         log: function() { }
     };
 
+// is it bad to add such fundamental methods to native class?
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
+
+//String.prototype.trim = function () {
+//    return this.replace(/^\s*/, "").replace(/\s*$/, "");
+//}
+String.prototype.trim = function() {
+    return this.replace(/^\s+|\s+$/g, '');
 };
 
 //** Get Url parameters as hash -> only one parameter key is allowed */
@@ -20,13 +28,6 @@ function getUrlVars() {
     }
     return vars;
 }
-
-//String.prototype.trim = function () {
-//    return this.replace(/^\s*/, "").replace(/\s*$/, "");
-//}
-String.prototype.trim = function() {
-    return this.replace(/^\s+|\s+$/g, '');
-};
 
 Common = function() {};
 
