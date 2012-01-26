@@ -8,5 +8,9 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/hello" />
+    
+    <Button android:id="@+id/btn_clickme" android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/clickme"/>
 
 </LinearLayout>

@@ -2,6 +2,7 @@
 <resources>
 
     <string name="hello">Hello World!</string>
-    <string name="app_name">VoiceActionsPluginExample</string>
+    <string name="app_name">Voice 2 Web Plugin</string>
+    <string name="clickme">Click me to start Jeannie and try the functionality of this plugin</string>
 
 </resources>

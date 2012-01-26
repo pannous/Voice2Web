@@ -9,22 +9,23 @@
     <application
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
-        
-        <!--  Test this plugin by saying "TEST PLUGIN" to the new version of Jeannie Labs -->
-       <receiver android:name="com.example.voice.actions.plugin.VoiceActionsTestReceiver">
-			<intent-filter>
-				<action android:name="com.pannous.voice.ACTION" />
-			</intent-filter>
-		</receiver>
-        
-           
-		<activity android:name="com.example.voice.action.VoiceActionsPlugin"
-			android:label="@string/app_name">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-        </activity>   
+
+        <!-- Test this plugin by saying "test plugin" -->
+        <receiver android:name="com.example.voice.actions.plugin.VoiceActionsTestReceiver" >
+            <intent-filter>
+                <action android:name="com.pannous.voice.ACTION" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".VoiceActionsPlugin"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
-    
+
 </manifest>
