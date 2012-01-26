@@ -1,16 +1,96 @@
-This code stands under Apache License 2
+All example code stands under Apache License 2
 
-With that server its possible to receive your spoken words
-from Jeannie on a browser!
-  https://market.android.com/details?id=com.pannous.voice.actions.free&hl=en
 
-Install nodejs v0.6.2 and npm. 
+What is Jeannie?
+================
+We from Pannous developed several features for our Voice Agent called
+Jeannie, which is available on the Android and Apple market.
+Now its time for you to teach Jeannie your own stuff!
 
-Then install the following packages:
- express
- jade
- nib
- socket.io
- stylus
 
-the jasmine tests are located at /spec/*.spec.js
+What is this?
+=============
+
+This is a demo of how to extend Jeannie - for Android only at the moment.
+With the server its possible to send your spoken words from Jeannie to any browser!
+
+
+Installation
+============
+
+1. Download Jeannie
+   https://market.android.com/details?id=com.pannous.voice.actions.free&hl=en
+
+2. Create an Android project and install plugin4android on your 
+   Android device. Be sure you customized the IP to you local machine.
+   So that it accesses you server and not jetsli.de:3000
+
+3. Install nodejs v0.6.2 and npm for the server.
+   Then install the following packages:
+   express jade nib socket.io stylus
+
+
+Tests
+=====
+
+Add more tests and features if you like!
+The jasmine tests are located at /spec/*.spec.js
+
+
+How to create your own plugin
+=============================
+
+Add this to your Manifest:
+<receiver android:name="com.example.voice.actions.plugin.VoiceActionsTestReceiver">
+    <intent-filter>
+        <action android:name="com.pannous.voice.ACTION" />
+    </intent-filter>
+</receiver>
+
+implement your BroadcastReceiver:
+
+ @Override
+ public void onReceive(Context context, Intent intent) {
+ // what did Jeannie hear?
+ // SpeechRecognizer.RESULTS_RECOGNITION
+ String input = intent.getStringExtra("input");
+
+ // save feedback for Jeannie here:
+ Bundle results = getResultExtras(true);
+
+
+PluginParams:
+
+ // let Jeannie and other plugins know if the action was already handled
+ public static final String HANDLED = "HANDLED";
+
+ // let Jeannie know which plugin reacted
+ public static final String HANDLED_BY = "HANDLED_BY";
+
+ // let Jeannie speak the answer
+ public static final String RESPONSE="RESPONSE";
+
+ // let Jeannie learn which keywords belong to this Action!
+ public static final String KEYWORDS = "KEYWORDS";
+
+ // let Jeannie know the context
+ public static final String SOURCE = "SOURCE";
+
+ // tell Jeannie to keep listening!
+ public static final String LISTEN_IN_BACKGROUND= "LISTEN_IN_BACKGROUND";
+
+ // give Jeannie an action
+ public static final String ACTION= "ACTION";
+
+ // let Jeannie NOT speak when she performs the ACTION
+ public static final String QUIET="QUIET";
+
+ // let Jeannie know the subject/topic of this context (might not apply)
+ public static final String SUBJECT = "SUBJECT";
+
+ // let Jeannie know the person in this context (might not apply)
+ public static final String PERSON = "PERSON";
+
+
+Let us know your idea - who knows - we might incorporate it into the official Jeannie
+and give you some revenue share :) !
