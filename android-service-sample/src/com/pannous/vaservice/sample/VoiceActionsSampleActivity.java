@@ -36,13 +36,13 @@ import android.widget.Toast;
  */
 public class VoiceActionsSampleActivity extends Activity {
 
-	private static final String TAG = "WebJeannie";
+	private static final String TAG = "VoiceActions";
 
 	private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
 
 	private Handler mHandler;
 
-	private WebView outWebJeannie;
+	private WebView outVoiceActions;
 
 	private TextView outUnderstand;
 
@@ -67,7 +67,7 @@ public class VoiceActionsSampleActivity extends Activity {
 		Button speakButton = (Button) findViewById(R.id.btn_speak);
 
 		outUnderstand = (EditText) findViewById(R.id.text);
-		outWebJeannie = (WebView) findViewById(R.id.out_web_jeannie);
+		outVoiceActions = (WebView) findViewById(R.id.out_web_jeannie);
 
 		mSupportedLanguageView = (Spinner) findViewById(R.id.supported_languages);
 
@@ -201,7 +201,7 @@ public class VoiceActionsSampleActivity extends Activity {
 					imageAddon = "<br/><img src=\"" + imageUrl + "\">";
 				}
 				String header = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";
-				outWebJeannie.loadData(header + "<html><body>" + res
+				outVoiceActions.loadData(header + "<html><body>" + res
 						+ imageAddon + "</body></html>", "text/html", "UTF-8");
 
 				// hmmh, this would hide our result

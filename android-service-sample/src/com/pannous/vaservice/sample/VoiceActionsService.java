@@ -50,7 +50,7 @@ public class VoiceActionsService extends Handler {
 		int timeZoneInMinutes = TimeZone.getDefault().getRawOffset() / 1000 / 60;
 		// TODO add client features: show-urls, reminder, ...
 		// see API Documentation & demo at https://weannie.pannous.com/demo/
-		String webjeannieUrl = "https://weannie.pannous.com/api?input=" + input
+		String voiceActionsUrl = "https://weannie.pannous.com/api?input=" + input
 				+ "&clientFeatures=say,show-images"
 				//
 				+ "&locale=" + lang
@@ -64,8 +64,8 @@ public class VoiceActionsService extends Handler {
 		imageUrls.clear();
 		String resultStr = "";
 		try {
-			log(webjeannieUrl);
-			URLConnection conn = new URL(webjeannieUrl).openConnection();
+			log(voiceActionsUrl);
+			URLConnection conn = new URL(voiceActionsUrl).openConnection();
 			conn.setDoOutput(true);
 			conn.setReadTimeout(timeout);
 			conn.setConnectTimeout(timeout);
@@ -80,14 +80,14 @@ public class VoiceActionsService extends Handler {
 
 		try {
 			if (resultStr == null || resultStr.length() == 0) {
-				text = "WebJeannie had empty answer";
+				text = "VoiceActions returned empty response!?";
 				return;
 			}
 
 			JSONArray outputJson = new JSONObject(resultStr)
 					.getJSONArray("output");
 			if (outputJson.length() == 0) {
-				text = "WebJeannie had empty result";
+				text = "Sorry, nothing found";
 				return;
 			}
 
@@ -126,14 +126,14 @@ public class VoiceActionsService extends Handler {
 	}
 
 	public void log(String str) {
-		Log.i("WebJeannie", str);
+		Log.i("VoiceActions", str);
 	}
 
 	public void err(Exception exc) {
-		Log.e("WebJeannie", "Problem", exc);
+		Log.e("VoiceActions", "Problem", exc);
 	}
 
 	public void err(String str) {
-		Log.e("WebJeannie", str);
+		Log.e("VoiceActions", str);
 	}
 }
