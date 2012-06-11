@@ -49,7 +49,7 @@ public class VoiceActionsService extends Handler {
 		}
 		int timeZoneInMinutes = TimeZone.getDefault().getRawOffset() / 1000 / 60;
 		// TODO add client features: show-urls, reminder, ...
-		// see API Documentation
+		// see API Documentation & demo at https://weannie.pannous.com/demo/
 		String webjeannieUrl = "https://weannie.pannous.com/api?input=" + input
 				+ "&clientFeatures=say,show-images"
 				//

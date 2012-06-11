@@ -1,23 +1,40 @@
+ License
+=========
+
 All example code stands under Apache License 2
 
 
-What is Jeannie?
-================
+ What is Jeannie?
+==================
+
 We from Pannous developed several features for our Voice Agent called
-Jeannie, which is available on the Android and Apple market.
-Now its time for you to teach Jeannie your own stuff!
+Jeannie, which is available for Android, Mac and iOS:
+
+https://play.google.com/store/apps/details?id=com.pannous.voice.actions.free
+http://itunes.apple.com/us/app/voice-actions/id528557334
+http://itunes.apple.com/app/voice-actions/id422037126?mt=8
 
 
-What is this?
-=============
+ What is the android-service-example?
+======================================
+
+In the example you see how to use our voice actions service from android.
+
+Installation
+
+1. clone the repository
+2. Import into Eclipse (do you need NetBeans support too?)
+3. Run & Try out
+
+
+ What is the android-plugin?
+=============================
 
 This is a demo of how to extend Jeannie - for Android only at the moment.
 With the server its possible to send your spoken words from Jeannie 
 to any browser!
 
-
 Installation
-============
 
 1. Download and install Jeannie
    https://market.android.com/details?id=com.pannous.voice.actions.free&hl=en
@@ -41,7 +58,6 @@ Installation
 
 
 Tests
-=====
 
 Add more tests and features if you like!
 The jasmine tests are located at /spec/*.spec.js
@@ -51,5 +67,4 @@ Contribute
 ==========
 
 Let us know your idea we'll mention it here and/or fork it
-and we might even incorporate it into the official Jeannie and give you
-some revenue share :) !
+and we might even incorporate it into the official Jeannie etc!
