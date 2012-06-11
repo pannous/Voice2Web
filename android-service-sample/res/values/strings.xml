@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="app_name">Sample for VoiceActions Service</string>
+    <string name="typeOrSpeak">Type or Click on Listen</string>
+
+</resources>
