@@ -1,4 +1,5 @@
 tmp
 *~
 node_modules
-plugin4android/bin/classes/
+plugin4android/bin/
+android-service-sample/bin
