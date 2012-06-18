@@ -101,7 +101,12 @@ public class VoiceActionsService extends Handler {
 			if (actions.has("say")) {
 				Object obj = actions.get("say");
 				if (obj instanceof JSONObject) {
-					text = ((JSONObject) obj).getString("text");
+					JSONObject sObj = (JSONObject) obj;
+					text = sObj.getString("text");
+					JSONArray arr = sObj.getJSONArray("moreText");
+					for (int i = 0; i < arr.length(); i++) {
+						text += " " + arr.getString(i);
+					}
 				} else {
 					text = obj.toString();
 				}
