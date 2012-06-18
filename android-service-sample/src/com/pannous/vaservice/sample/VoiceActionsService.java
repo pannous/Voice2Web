@@ -47,7 +47,7 @@ public class VoiceActionsService extends Handler {
 			input = URLEncoder.encode(input, "UTF-8");
 		} catch (Exception ex) {
 		}
-		int timeZoneInMinutes = TimeZone.getDefault().getRawOffset() / 1000 / 60;
+		int timeZoneInMinutes = TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000 / 60;
 		// TODO add client features: show-urls, reminder, ...
 		// see API Documentation & demo at https://weannie.pannous.com/demo/
 		String voiceActionsUrl = "https://weannie.pannous.com/api?input=" + input
@@ -55,7 +55,7 @@ public class VoiceActionsService extends Handler {
 				//
 				+ "&locale=" + lang
 				//
-				+ "&clientTimeZone=" + timeZoneInMinutes
+				+ "&timeZone=" + timeZoneInMinutes
 				//
 				+ "&location=" + location
 				// TODO use your production key here!
