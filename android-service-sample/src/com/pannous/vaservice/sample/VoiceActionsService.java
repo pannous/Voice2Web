@@ -48,7 +48,8 @@ public class VoiceActionsService extends Handler {
 		} catch (Exception ex) {
 		}
 		int timeZoneInMinutes = TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000 / 60;
-		// TODO add client features: show-urls, reminder, ...
+		// TODO add ping https://weannie.pannous.com/ping
+		// TODO add more client features: open-url, reminder, ...
 		// see API Documentation & demo at https://weannie.pannous.com/demo/
 		String voiceActionsUrl = "https://weannie.pannous.com/api?input=" + input
 				+ "&clientFeatures=say,show-images"
@@ -92,7 +93,7 @@ public class VoiceActionsService extends Handler {
 			}
 
 			JSONObject firstHandler = outputJson.getJSONObject(0);
-			if (firstHandler.has("errorMessage")) {
+			if (firstHandler.has("errorMessage") && firstHandler.getString("errorMessage").length() > 0) {
 				throw new RuntimeException("Server side error: "
 						+ firstHandler.getString("errorMessage"));
 			}
